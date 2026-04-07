@@ -20,7 +20,7 @@ export default function OpportunityCard({ opp }) {
   const badge = typeBadge[opp.type] || typeBadge.role;
 
   return (
-    <div className="rounded-xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:shadow-lg transition-all duration-200 animate-fade-up flex flex-col">
+    <div className="panel panel-hover p-5 animate-fade-up flex flex-col">
       {/* top row — type + deadline */}
       <div className="flex items-center justify-between mb-3">
         <Badge color={badge.color}>{badge.label}</Badge>

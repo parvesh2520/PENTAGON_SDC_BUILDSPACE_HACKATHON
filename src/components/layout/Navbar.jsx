@@ -44,11 +44,11 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-40 w-full border-b border-border dark:border-slate-700 glass">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+    <nav className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-700/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl">
+      <div className="app-shell flex h-16 items-center justify-between">
         {/* --- logo --- */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-heading dark:text-white">
-          <span className="text-brand-600">Build</span>Space
+        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-heading dark:text-white tracking-tight">
+          <span className="bg-gradient-to-r from-brand-600 to-violet-500 bg-clip-text text-transparent">Build</span>Space
         </Link>
 
         {/* --- desktop nav links --- */}
@@ -137,7 +137,7 @@ export default function Navbar() {
 
           {/* mobile hamburger */}
           <button
-            className="md:hidden p-2 text-body dark:text-slate-300 cursor-pointer"
+            className="md:hidden p-2 text-body dark:text-slate-300 cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <HiOutlineX className="w-6 h-6" /> : <HiOutlineMenu className="w-6 h-6" />}
@@ -147,7 +147,7 @@ export default function Navbar() {
 
       {/* --- mobile drawer --- */}
       {menuOpen && (
-        <div className="md:hidden border-t border-border dark:border-slate-700 bg-white dark:bg-slate-900 px-4 pb-4 animate-fade-up">
+        <div className="md:hidden border-t border-border dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 px-4 pb-4 animate-fade-up">
           {user ? (
             primaryLinks.map((l) => (
               <NavLink

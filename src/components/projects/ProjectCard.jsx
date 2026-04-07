@@ -14,7 +14,7 @@ export default function ProjectCard({ project }) {
   const isOpen = project.status === "open";
 
   return (
-    <div className="rounded-xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-5 hover:shadow-lg transition-all duration-200 animate-fade-up flex flex-col">
+    <div className="panel panel-hover p-5 animate-fade-up flex flex-col">
       {/* title + status */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <Link

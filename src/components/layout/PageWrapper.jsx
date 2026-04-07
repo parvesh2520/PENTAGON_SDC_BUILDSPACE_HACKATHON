@@ -7,7 +7,7 @@
 
 export default function PageWrapper({ children, className = "" }) {
   return (
-    <main className={`mx-auto max-w-7xl px-4 sm:px-6 py-8 ${className}`}>
+    <main className={`app-shell py-8 sm:py-10 ${className}`}>
       {children}
     </main>
   );

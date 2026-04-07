@@ -19,7 +19,7 @@ const typeColour = {
 
 export default function FeedCard({ post }) {
   return (
-    <div className="rounded-xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-5 animate-fade-up hover:shadow-md transition-shadow">
+    <div className="panel panel-hover p-5 animate-fade-up">
       {/* top row — avatar + name + timestamp */}
       <div className="flex items-center gap-3 mb-3">
         <Link to={`/u/${post.author_id}`}>
