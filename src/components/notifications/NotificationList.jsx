@@ -26,8 +26,7 @@ export default function NotificationList() {
 
   const loadNotifications = useCallback(async () => {
     if (!user) return;
-    setError(null);
-    const { data, error: loadError } = await supabase
+    const { data } = await supabase
       .from("notifications")
       .select("*")
       .eq("user_id", user.id)

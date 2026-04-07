@@ -22,7 +22,6 @@ export default function ProjectDetailView({ projectId }) {
   const [error, setError] = useState(null);
 
   const load = useCallback(async () => {
-    setError(null);
     // get the project
     const { data: proj, error: projectError } = await supabase
       .from("projects")
