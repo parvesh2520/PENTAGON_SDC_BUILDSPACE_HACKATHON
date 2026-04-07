@@ -1,9 +1,7 @@
 /*
   NotificationBell.jsx
   --------------------
-  The little bell icon in the navbar. Shows a red badge with the
-  count of unread notifications by subscribing to the realtime
-  channel on the notifications table.
+  Futuristic navbar notification bell with cyber glow badge.
 */
 
 import { useState, useEffect } from "react";
@@ -15,12 +13,10 @@ import useAuthStore from "../../store/authStore";
 
 export default function NotificationBell() {
   const user = useAuthStore((s) => s.user);
-  const [count, setCount] = useState(0);
+  const [baseCount, setBaseCount] = useState(0);
 
-  // subscribe to new notifications aimed at this user
   const { incoming } = useRealtime("notifications", user ? { column: "user_id", value: user.id } : null);
 
-  // fetch unread count on mount
   useEffect(() => {
     if (!user) return;
 
@@ -31,29 +27,32 @@ export default function NotificationBell() {
         .eq("user_id", user.id)
         .eq("read", false);
 
-      setCount(c || 0);
+      setBaseCount(c || 0);
     }
 
     fetchCount();
   }, [user]);
 
-  // bump count whenever realtime delivers something new
-  useEffect(() => {
-    if (incoming.length > 0) {
-      setCount((prev) => prev + incoming.length);
-    }
-  }, [incoming.length]);
+  const count = baseCount + incoming.length;
 
   return (
     <Link
       to="/notifications"
-      className="relative p-2 rounded-lg text-body dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      className="group relative p-2.5 rounded-xl text-slate-400 hover:text-cyan-400 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 hover:border-cyan-500/30 transition-all duration-300"
     >
-      <HiOutlineBell className="w-5 h-5" />
+      {/* Glow effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 to-violet-500/0 group-hover:from-cyan-500/10 group-hover:to-violet-500/10 rounded-xl blur transition-all duration-300" />
+      
+      <HiOutlineBell className="relative w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
 
       {count > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white animate-soft-pulse">
-          {count > 99 ? "99+" : count}
+        <span className="absolute -top-1 -right-1 flex items-center justify-center">
+          {/* Outer glow */}
+          <span className="absolute inset-0 h-5 min-w-[20px] rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 blur-sm animate-pulse" />
+          {/* Badge */}
+          <span className="relative h-5 min-w-[20px] flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 px-1.5 text-[10px] font-bold font-mono text-white shadow-lg shadow-cyan-500/50">
+            {count > 99 ? "99+" : count}
+          </span>
         </span>
       )}
     </Link>

@@ -15,6 +15,8 @@ import { supabase } from "../lib/supabaseClient";
 
 export function useRealtime(table, filter) {
   const [incoming, setIncoming] = useState([]);
+  const filterColumn = filter?.column;
+  const filterValue = filter?.value;
 
   useEffect(() => {
     // build the channel — Supabase wants a unique name per subscription
@@ -27,8 +29,8 @@ export function useRealtime(table, filter) {
     };
 
     // optional column filter, e.g. { column: "user_id", value: "abc-123" }
-    if (filter) {
-      config.filter = `${filter.column}=eq.${filter.value}`;
+    if (filterColumn && filterValue) {
+      config.filter = `${filterColumn}=eq.${filterValue}`;
     }
 
     const channel = supabase
@@ -42,7 +44,7 @@ export function useRealtime(table, filter) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [table, filter?.column, filter?.value]);
+  }, [table, filterColumn, filterValue]);
 
   // lets the parent clear old entries after processing
   function clearIncoming() {

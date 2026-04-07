@@ -1,17 +1,16 @@
 /*
   ProjectDetail.jsx  (component version)
   ---------------------------------------
-  Full detail view for a single project. Shows members list,
-  description, repo link, and a "Request to Join" button
-  for logged-in users who aren't already members.
+  Futuristic detail view for a single project with cyber aesthetics.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import useAuthStore from "../../store/authStore";
 import Avatar from "../ui/Avatar";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
+import { HiOutlineExternalLink } from "react-icons/hi";
 
 export default function ProjectDetailView({ projectId }) {
   const user = useAuthStore((s) => s.user);
@@ -19,35 +18,43 @@ export default function ProjectDetailView({ projectId }) {
   const [members, setMembers]   = useState([]);
   const [loading, setLoading]   = useState(true);
   const [requested, setRequested] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (projectId) load();
-  }, [projectId]);
-
-  async function load() {
-    // get the project
-    const { data: proj } = await supabase
+  const load = useCallback(async () => {
+    const { data: proj, error: projectError } = await supabase
       .from("projects")
       .select("*, profiles(display_name, avatar_url)")
       .eq("id", projectId)
       .single();
+    if (projectError) {
+      setError(projectError.message || "Could not load this project.");
+      setLoading(false);
+      return;
+    }
 
-    // get the members
-    const { data: mems } = await supabase
+    const { data: mems, error: membersError } = await supabase
       .from("project_members")
       .select("*, profiles(display_name, avatar_url, username)")
       .eq("project_id", projectId);
+    if (membersError) {
+      setError(membersError.message || "Could not load team members.");
+      setLoading(false);
+      return;
+    }
 
     setProject(proj);
     setMembers(mems || []);
     setLoading(false);
 
-    // figure out if current user already requested / joined
     if (user) {
       const already = (mems || []).some((m) => m.user_id === user.id);
       setRequested(already);
     }
-  }
+  }, [projectId, user]);
+
+  useEffect(() => {
+    if (projectId) load();
+  }, [projectId, load]);
 
   async function requestJoin() {
     if (!user || requested) return;
@@ -58,7 +65,6 @@ export default function ProjectDetailView({ projectId }) {
       role:       "pending",
     });
 
-    // notify the project owner
     if (project?.owner_id) {
       await supabase.from("notifications").insert({
         user_id: project.owner_id,
@@ -72,84 +78,161 @@ export default function ProjectDetailView({ projectId }) {
   }
 
   if (loading) {
-    return <div className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />;
+    return (
+      <div className="space-y-6">
+        <div className="relative h-64 rounded-2xl bg-slate-900/50 border border-slate-700/50 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent animate-shimmer" />
+        </div>
+        <div className="relative h-48 rounded-2xl bg-slate-900/50 border border-slate-700/50 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent animate-shimmer" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-6 py-5 text-sm text-red-400 flex items-center gap-3">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        {error}
+      </div>
+    );
   }
 
   if (!project) {
-    return <p className="text-center py-12 text-muted">Project not found.</p>;
+    return (
+      <div className="text-center py-20">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800/50 border border-slate-700/50 flex items-center justify-center">
+          <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p className="text-slate-500">Project not found.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      {/* header */}
-      <div className="rounded-2xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-heading dark:text-white">{project.title}</h1>
-            <p className="text-sm text-muted mt-1">
-              by {project.profiles?.display_name || "Unknown"}
+    <div className="space-y-6 animate-fade-up">
+      {/* header card */}
+      <div className="relative group rounded-2xl bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 overflow-hidden">
+        {/* Glow effect */}
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/0 to-violet-500/0 group-hover:from-cyan-500/10 group-hover:to-violet-500/10 rounded-2xl blur-lg transition-all duration-500" />
+        
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0, 255, 255, 0.3) 1px, transparent 0)',
+          backgroundSize: '24px 24px'
+        }} />
+
+        <div className="relative p-6 sm:p-8">
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-violet-400">
+                {project.title}
+              </h1>
+              <p className="text-sm text-slate-500 mt-2 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                by {project.profiles?.display_name || "Unknown"}
+              </p>
+            </div>
+            <Badge color={project.status === "open" ? "green" : "red"}>
+              {project.status}
+            </Badge>
+          </div>
+
+          <p className="text-slate-300 leading-relaxed mb-6">{project.description}</p>
+
+          {project.tech_stack?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {project.tech_stack.map((t, i) => (
+                <span 
+                  key={t} 
+                  style={{ animationDelay: `${i * 50}ms` }}
+                  className="px-3 py-1.5 text-xs font-mono text-cyan-400/80 bg-cyan-500/10 border border-cyan-500/20 rounded-lg animate-fade-up"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {project.repo_url && (
+            <a
+              href={project.repo_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300"
+            >
+              <HiOutlineExternalLink className="w-4 h-4" />
+              View Repository
+            </a>
+          )}
+
+          {user && !requested && project.status === "open" && user.id !== project.owner_id && (
+            <Button onClick={requestJoin} className="mt-6">
+              Request to Join
+            </Button>
+          )}
+
+          {requested && (
+            <p className="mt-6 text-sm text-slate-500 flex items-center gap-2">
+              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              {"You've already joined or requested to join."}
             </p>
-          </div>
-          <Badge color={project.status === "open" ? "green" : "red"}>
-            {project.status}
-          </Badge>
+          )}
         </div>
-
-        <p className="text-body dark:text-slate-300 mt-4 leading-relaxed">{project.description}</p>
-
-        {project.tech_stack?.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {project.tech_stack.map((t) => (
-              <Badge key={t} color="slate">{t}</Badge>
-            ))}
-          </div>
-        )}
-
-        {project.repo_url && (
-          <a
-            href={project.repo_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-4 text-sm text-brand-600 dark:text-brand-400 hover:underline"
-          >
-            View Repository ↗
-          </a>
-        )}
-
-        {user && !requested && project.status === "open" && user.id !== project.owner_id && (
-          <Button onClick={requestJoin} className="mt-4">
-            Request to Join
-          </Button>
-        )}
-
-        {requested && (
-          <p className="mt-4 text-sm text-muted">You've already joined or requested to join.</p>
-        )}
       </div>
 
       {/* members list */}
-      <div className="rounded-2xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-6">
-        <h2 className="text-lg font-semibold text-heading dark:text-white mb-4">
-          Team Members ({members.length})
-        </h2>
+      <div className="relative group rounded-2xl bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0, 255, 255, 0.3) 1px, transparent 0)',
+          backgroundSize: '24px 24px'
+        }} />
 
-        {members.length === 0 ? (
-          <p className="text-sm text-muted">No members yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {members.map((m) => (
-              <div key={m.user_id} className="flex items-center gap-3">
-                <Avatar src={m.profiles?.avatar_url} name={m.profiles?.display_name} size="sm" />
-                <div>
-                  <p className="text-sm font-medium text-heading dark:text-white">
-                    {m.profiles?.display_name}
-                  </p>
-                  <p className="text-xs text-muted">{m.role}</p>
+        <div className="relative p-6">
+          <h2 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400 mb-6 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/20">
+              <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            Team Members ({members.length})
+          </h2>
+
+          {members.length === 0 ? (
+            <p className="text-sm text-slate-500">No members yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {members.map((m, i) => (
+                <div 
+                  key={m.user_id} 
+                  style={{ animationDelay: `${i * 50}ms` }}
+                  className="group/member flex items-center gap-4 p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 hover:border-cyan-500/30 transition-all duration-300 animate-fade-up"
+                >
+                  <div className="relative">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/50 to-violet-500/50 rounded-full blur opacity-0 group-hover/member:opacity-100 transition-opacity duration-300" />
+                    <Avatar src={m.profiles?.avatar_url} name={m.profiles?.display_name} size="sm" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white">
+                      {m.profiles?.display_name}
+                    </p>
+                    <p className="text-xs text-slate-500 font-mono">{m.role}</p>
+                  </div>
+                  <Badge color={m.role === "owner" ? "brand" : "slate"}>
+                    {m.role}
+                  </Badge>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
