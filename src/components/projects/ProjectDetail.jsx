@@ -6,7 +6,7 @@
   for logged-in users who aren't already members.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import useAuthStore from "../../store/authStore";
 import Avatar from "../ui/Avatar";
@@ -19,24 +19,32 @@ export default function ProjectDetailView({ projectId }) {
   const [members, setMembers]   = useState([]);
   const [loading, setLoading]   = useState(true);
   const [requested, setRequested] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (projectId) load();
-  }, [projectId]);
-
-  async function load() {
+  const load = useCallback(async () => {
+    setError(null);
     // get the project
-    const { data: proj } = await supabase
+    const { data: proj, error: projectError } = await supabase
       .from("projects")
       .select("*, profiles(display_name, avatar_url)")
       .eq("id", projectId)
       .single();
+    if (projectError) {
+      setError(projectError.message || "Could not load this project.");
+      setLoading(false);
+      return;
+    }
 
     // get the members
-    const { data: mems } = await supabase
+    const { data: mems, error: membersError } = await supabase
       .from("project_members")
       .select("*, profiles(display_name, avatar_url, username)")
       .eq("project_id", projectId);
+    if (membersError) {
+      setError(membersError.message || "Could not load team members.");
+      setLoading(false);
+      return;
+    }
 
     setProject(proj);
     setMembers(mems || []);
@@ -47,7 +55,11 @@ export default function ProjectDetailView({ projectId }) {
       const already = (mems || []).some((m) => m.user_id === user.id);
       setRequested(already);
     }
-  }
+  }, [projectId, user]);
+
+  useEffect(() => {
+    if (projectId) load();
+  }, [projectId, load]);
 
   async function requestJoin() {
     if (!user || requested) return;
@@ -73,6 +85,14 @@ export default function ProjectDetailView({ projectId }) {
 
   if (loading) {
     return <div className="h-64 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />;
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-4 py-4 text-sm text-red-700 dark:text-red-200">
+        {error}
+      </div>
+    );
   }
 
   if (!project) {

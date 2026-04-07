@@ -7,6 +7,7 @@
 
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
+import ConnectionNotice from "./components/layout/ConnectionNotice";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Feed from "./pages/Feed";
@@ -22,6 +23,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-surface dark:bg-slate-900 transition-colors duration-200">
       <Navbar />
+      <ConnectionNotice />
 
       <Routes>
         <Route path="/"                element={<Landing />} />

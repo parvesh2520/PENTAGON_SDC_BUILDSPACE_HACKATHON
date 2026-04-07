@@ -29,6 +29,27 @@ const features = [
   },
 ];
 
+const highlights = [
+  { label: "Unified developer identity", value: "1 profile" },
+  { label: "Collaboration workflows", value: "Projects + teams" },
+  { label: "Opportunity discovery", value: "Hackathons + roles" },
+];
+
+const journeySteps = [
+  {
+    title: "Build your profile",
+    text: "Show your skills, interests, and past projects so the right teammates can find you faster.",
+  },
+  {
+    title: "Create or join projects",
+    text: "Post project ideas with your tech stack, invite collaborators, and track team progress.",
+  },
+  {
+    title: "Discover opportunities",
+    text: "Browse hackathon openings, project roles, and teammate requests from one board.",
+  },
+];
+
 export default function Landing() {
   return (
     <div className="min-h-screen">
@@ -60,6 +81,21 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ======== HIGHLIGHTS ======== */}
+      <section className="mx-auto max-w-6xl px-4 pb-6 sm:pb-10">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {highlights.map((item) => (
+            <div
+              key={item.label}
+              className="rounded-xl border border-border dark:border-slate-700 bg-white/90 dark:bg-slate-800/80 p-5 text-center"
+            >
+              <p className="text-2xl font-bold text-brand-600 dark:text-brand-400">{item.value}</p>
+              <p className="mt-1 text-sm text-body dark:text-slate-300">{item.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ======== FEATURES ======== */}
       <section className="mx-auto max-w-6xl px-4 py-20">
         <h2 className="text-2xl sm:text-3xl font-bold text-heading dark:text-white text-center mb-12">
@@ -77,6 +113,32 @@ export default function Landing() {
               </div>
               <h3 className="text-lg font-semibold text-heading dark:text-white mb-2">{f.title}</h3>
               <p className="text-sm text-body dark:text-slate-400 leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ======== BUILDER JOURNEY ======== */}
+      <section className="mx-auto max-w-5xl px-4 py-16">
+        <h2 className="text-2xl font-bold text-heading dark:text-white text-center mb-8">
+          From idea to shipped project
+        </h2>
+
+        <div className="space-y-4">
+          {journeySteps.map((step, index) => (
+            <div
+              key={step.title}
+              className="rounded-xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-5 sm:p-6"
+            >
+              <div className="flex items-start gap-4">
+                <div className="h-8 w-8 rounded-full bg-brand-600 text-white text-sm font-semibold flex items-center justify-center shrink-0">
+                  {index + 1}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-heading dark:text-white">{step.title}</h3>
+                  <p className="mt-1 text-sm text-body dark:text-slate-300">{step.text}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
