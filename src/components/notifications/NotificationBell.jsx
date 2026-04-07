@@ -15,7 +15,7 @@ import useAuthStore from "../../store/authStore";
 
 export default function NotificationBell() {
   const user = useAuthStore((s) => s.user);
-  const [count, setCount] = useState(0);
+  const [baseCount, setBaseCount] = useState(0);
 
   // subscribe to new notifications aimed at this user
   const { incoming } = useRealtime("notifications", user ? { column: "user_id", value: user.id } : null);
@@ -31,18 +31,13 @@ export default function NotificationBell() {
         .eq("user_id", user.id)
         .eq("read", false);
 
-      setCount(c || 0);
+      setBaseCount(c || 0);
     }
 
     fetchCount();
   }, [user]);
 
-  // bump count whenever realtime delivers something new
-  useEffect(() => {
-    if (incoming.length > 0) {
-      setCount((prev) => prev + incoming.length);
-    }
-  }, [incoming.length]);
+  const count = baseCount + incoming.length;
 
   return (
     <Link

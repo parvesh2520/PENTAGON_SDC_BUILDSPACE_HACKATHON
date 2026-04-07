@@ -27,20 +27,14 @@ export default function Settings() {
   const { profile, updateProfile } = useProfile();
 
   // form states
-  const [displayName, setDisplayName] = useState("");
-  const [bio, setBio]                 = useState("");
+  const [profileDraft, setProfileDraft] = useState(null);
   const [newPassword, setNewPassword] = useState("");
   const [uploading, setUploading]     = useState(false);
   const [saving, setSaving]           = useState(false);
   const [msg, setMsg]                 = useState(null);
 
-  // populate form when profile loads
-  useEffect(() => {
-    if (profile) {
-      setDisplayName(profile.display_name || "");
-      setBio(profile.bio || "");
-    }
-  }, [profile]);
+  const displayName = profileDraft?.display_name ?? profile?.display_name ?? "";
+  const bio = profileDraft?.bio ?? profile?.bio ?? "";
 
   // handle avatar file upload
   async function handleAvatarUpload(e) {
@@ -70,6 +64,7 @@ export default function Settings() {
   async function saveProfile() {
     setSaving(true);
     await updateProfile({ display_name: displayName, bio });
+    setProfileDraft(null);
     setMsg("Profile saved!");
     setSaving(false);
   }
@@ -145,7 +140,12 @@ export default function Settings() {
           <Input
             label="Display Name"
             value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
+            onChange={(e) =>
+              setProfileDraft((prev) => ({
+                display_name: e.target.value,
+                bio: prev?.bio ?? profile?.bio ?? "",
+              }))
+            }
           />
 
           <div className="flex flex-col gap-1.5">
@@ -153,7 +153,12 @@ export default function Settings() {
             <textarea
               rows={3}
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
+              onChange={(e) =>
+                setProfileDraft((prev) => ({
+                  display_name: prev?.display_name ?? profile?.display_name ?? "",
+                  bio: e.target.value,
+                }))
+              }
               className="w-full rounded-lg border border-border dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-heading dark:text-white placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
             />
           </div>

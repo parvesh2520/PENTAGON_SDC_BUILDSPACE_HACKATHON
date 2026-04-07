@@ -6,7 +6,7 @@
   for logged-in users who aren't already members.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import useAuthStore from "../../store/authStore";
 import Avatar from "../ui/Avatar";
@@ -20,11 +20,7 @@ export default function ProjectDetailView({ projectId }) {
   const [loading, setLoading]   = useState(true);
   const [requested, setRequested] = useState(false);
 
-  useEffect(() => {
-    if (projectId) load();
-  }, [projectId]);
-
-  async function load() {
+  const load = useCallback(async () => {
     // get the project
     const { data: proj } = await supabase
       .from("projects")
@@ -47,7 +43,11 @@ export default function ProjectDetailView({ projectId }) {
       const already = (mems || []).some((m) => m.user_id === user.id);
       setRequested(already);
     }
-  }
+  }, [projectId, user]);
+
+  useEffect(() => {
+    if (projectId) load();
+  }, [projectId, load]);
 
   async function requestJoin() {
     if (!user || requested) return;

@@ -6,7 +6,7 @@
   opens the modal.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import useAuthStore from "../store/authStore";
 import PageWrapper from "../components/layout/PageWrapper";
@@ -23,11 +23,7 @@ export default function Projects() {
   const [status, setStatus]     = useState("all"); // all | open | closed
   const [modalOpen, setModalOpen] = useState(false);
 
-  useEffect(() => {
-    loadProjects();
-  }, [status]);
-
-  async function loadProjects() {
+  const loadProjects = useCallback(async () => {
     setLoading(true);
 
     let query = supabase
@@ -49,7 +45,11 @@ export default function Projects() {
 
     setProjects(shaped);
     setLoading(false);
-  }
+  }, [status]);
+
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
 
   // client-side search filter (searching by title)
   const filtered = projects.filter((p) =>

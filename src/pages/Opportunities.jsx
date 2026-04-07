@@ -6,7 +6,7 @@
   Logged-in users can post new opportunities via the modal.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import useAuthStore from "../store/authStore";
 import PageWrapper from "../components/layout/PageWrapper";
@@ -23,11 +23,7 @@ export default function Opportunities() {
   const [typeFilter, setType]     = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [typeFilter]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true);
 
     let query = supabase
@@ -42,7 +38,11 @@ export default function Opportunities() {
     const { data } = await query;
     setOpps(data || []);
     setLoading(false);
-  }
+  }, [typeFilter]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const filtered = opps.filter((o) =>
     o.title.toLowerCase().includes(search.toLowerCase())

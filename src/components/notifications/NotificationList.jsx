@@ -5,7 +5,7 @@
   and read/unread state. Users can mark individual items or all as read.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import useAuthStore from "../../store/authStore";
 import Badge from "../ui/Badge";
@@ -23,12 +23,8 @@ export default function NotificationList() {
   const [items, setItems]     = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadNotifications = useCallback(async () => {
     if (!user) return;
-    loadNotifications();
-  }, [user]);
-
-  async function loadNotifications() {
     const { data } = await supabase
       .from("notifications")
       .select("*")
@@ -38,7 +34,12 @@ export default function NotificationList() {
 
     setItems(data || []);
     setLoading(false);
-  }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    loadNotifications();
+  }, [user, loadNotifications]);
 
   async function markAllRead() {
     await supabase

@@ -5,33 +5,20 @@
   Updates the `profiles` table and refreshes on save.
 */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import SkillsGrid from "./SkillsGrid";
 
 export default function EditProfileDrawer({ open, onClose, profile, onSave }) {
-  const [form, setForm] = useState({
-    display_name: "",
-    bio: "",
-    github_url: "",
-    linkedin_url: "",
-    skills: [],
-  });
+  const [form, setForm] = useState(() => ({
+    display_name: profile?.display_name || "",
+    bio: profile?.bio || "",
+    github_url: profile?.github_url || "",
+    linkedin_url: profile?.linkedin_url || "",
+    skills: profile?.skills || [],
+  }));
   const [saving, setSaving] = useState(false);
-
-  // sync form with current profile when drawer opens
-  useEffect(() => {
-    if (profile) {
-      setForm({
-        display_name: profile.display_name || "",
-        bio:          profile.bio || "",
-        github_url:   profile.github_url || "",
-        linkedin_url: profile.linkedin_url || "",
-        skills:       profile.skills || [],
-      });
-    }
-  }, [profile]);
 
   async function handleSubmit(e) {
     e.preventDefault();
