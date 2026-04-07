@@ -1,131 +1,128 @@
-/*
-  Landing.jsx
-  -----------
-  Public home page — the first thing visitors see.
-  Sections: hero, features grid, live feed preview, footer.
-  No auth needed to view this page.
-*/
-
 import { Link } from "react-router-dom";
-import { HiOutlineUser, HiOutlineFolder, HiOutlineLightningBolt } from "react-icons/hi";
+import {
+  HiOutlineUserGroup,
+  HiOutlineSparkles,
+  HiOutlineBriefcase,
+  HiOutlineLightningBolt,
+  HiOutlineCheckCircle,
+} from "react-icons/hi";
 import Button from "../components/ui/Button";
 
-// the 3 feature cards in the middle section
-const features = [
+const pillars = [
   {
-    icon: HiOutlineUser,
+    icon: HiOutlineUserGroup,
     title: "Developer Profiles",
-    desc: "Showcase your skills, link GitHub and LinkedIn, and let teams discover you based on your tech stack.",
+    desc: "A focused profile that showcases skills, interests, and projects in one place.",
   },
   {
-    icon: HiOutlineFolder,
-    title: "Team Projects",
-    desc: "Create projects, invite collaborators, and track your team — all from one place.",
+    icon: HiOutlineSparkles,
+    title: "Project Collaboration",
+    desc: "Build teams faster with project cards, role visibility, and clear contribution flow.",
   },
   {
-    icon: HiOutlineLightningBolt,
-    title: "Opportunities",
-    desc: "Find hackathon partners, open roles, or teammates hunting for exactly your skill set.",
+    icon: HiOutlineBriefcase,
+    title: "Opportunity Board",
+    desc: "Discover hackathons, open roles, and team openings from one structured board.",
   },
+];
+
+const outcomes = [
+  "Find the right teammates quickly",
+  "Showcase your profile with credibility",
+  "Track projects and collaboration clearly",
+  "Stay updated on opportunities in real-time",
 ];
 
 export default function Landing() {
   return (
-    <div className="min-h-screen">
-      {/* ======== HERO ======== */}
-      <section className="relative overflow-hidden">
-        {/* gradient blobs for visual interest */}
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-brand-400/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl" />
+    <div className="pb-16">
+      <section className="relative overflow-hidden border-b border-slate-200/60 dark:border-slate-800/70">
+        <div className="absolute -top-28 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-500/15 blur-3xl" />
+        <div className="absolute -bottom-24 right-10 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl" />
 
-        <div className="relative mx-auto max-w-5xl px-4 py-24 sm:py-36 text-center">
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-heading dark:text-white leading-tight">
-            Where developers{" "}
-            <span className="text-brand-600 dark:text-brand-400">build together</span>
-          </h1>
+        <div className="app-shell relative py-20 sm:py-24">
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-brand-50 px-4 py-1 text-xs font-medium text-brand-700 dark:border-brand-800 dark:bg-brand-900/30 dark:text-brand-300">
+              <HiOutlineLightningBolt className="h-3.5 w-3.5" />
+              Collaboration Platform for Student Developers
+            </div>
 
-          <p className="mt-5 text-lg text-body dark:text-slate-400 max-w-2xl mx-auto">
-            Find your next teammate, launch a side project, or land a hackathon
-            squad — BuildSpace connects builders who ship.
-          </p>
+            <h1 className="mt-6 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-6xl">
+              Build projects with the
+              <span className="block bg-gradient-to-r from-brand-600 to-violet-500 bg-clip-text text-transparent">
+                right people, faster.
+              </span>
+            </h1>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link to="/auth">
-              <Button size="lg">Get Started — it's free</Button>
-            </Link>
-            <Link to="/projects">
-              <Button variant="secondary" size="lg">Explore Projects</Button>
-            </Link>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300 sm:text-lg">
+              BuildSpace unifies profile building, team formation, and opportunity discovery into a single professional
+              developer experience.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link to="/auth">
+                <Button size="lg">Start Building</Button>
+              </Link>
+              <Link to="/projects">
+                <Button variant="secondary" size="lg">Explore Projects</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ======== FEATURES ======== */}
-      <section className="mx-auto max-w-6xl px-4 py-20">
-        <h2 className="text-2xl sm:text-3xl font-bold text-heading dark:text-white text-center mb-12">
-          Everything you need to collaborate
-        </h2>
-
-        <div className="grid gap-8 sm:grid-cols-3">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className="rounded-2xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-7 text-center hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand-100 dark:bg-brand-900/30 mb-5">
-                <f.icon className="w-7 h-7 text-brand-600 dark:text-brand-400" />
+      <section className="app-shell py-12 sm:py-16">
+        <div className="grid gap-4 md:grid-cols-3">
+          {pillars.map((item) => (
+            <article key={item.title} className="panel panel-hover p-6">
+              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-300">
+                <item.icon className="h-5 w-5" />
               </div>
-              <h3 className="text-lg font-semibold text-heading dark:text-white mb-2">{f.title}</h3>
-              <p className="text-sm text-body dark:text-slate-400 leading-relaxed">{f.desc}</p>
-            </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{item.desc}</p>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* ======== LIVE FEED PREVIEW ======== */}
-      <section className="mx-auto max-w-4xl px-4 py-16">
-        <h2 className="text-2xl font-bold text-heading dark:text-white text-center mb-8">
-          Live Activity
-        </h2>
-
-        <div className="space-y-4">
-          {/* fake preview cards — just to give a feel for the feed */}
-          {[
-            { user: "Ananya S.", text: "Just launched a new React + Supabase starter template!", time: "2m ago", tag: "project" },
-            { user: "Rahul K.",  text: "Looking for a Python dev for our ML hackathon team 🚀", time: "8m ago", tag: "opportunity" },
-            { user: "Priya M.",  text: "Updated the landing page design for TeamSync project", time: "15m ago", tag: "update" },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-5 animate-fade-up"
-              style={{ animationDelay: `${i * 120}ms` }}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/40 flex items-center justify-center text-xs font-bold text-brand-700 dark:text-brand-300">
-                  {item.user.charAt(0)}
-                </div>
-                <span className="text-sm font-medium text-heading dark:text-white">{item.user}</span>
-                <span className="text-xs text-muted ml-auto">{item.time}</span>
-              </div>
-              <p className="text-sm text-body dark:text-slate-300">{item.text}</p>
+      <section className="app-shell">
+        <div className="panel p-6 sm:p-8">
+          <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+            <div>
+              <h2 className="section-title">A focused workflow from profile to shipped project</h2>
+              <p className="section-subtitle mt-3">
+                Designed for hackathons, campus clubs, and early career builders who need speed without chaos.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {outcomes.map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                    <HiOutlineCheckCircle className="h-4 w-4 text-emerald-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* ======== FOOTER ======== */}
-      <footer className="border-t border-border dark:border-slate-700 bg-surface-alt dark:bg-slate-900">
-        <div className="mx-auto max-w-6xl px-4 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted">
-            © {new Date().getFullYear()} BuildSpace — built with ☕ and Supabase
-          </p>
-          <div className="flex gap-6 text-sm text-muted">
-            <Link to="/projects" className="hover:text-heading dark:hover:text-white transition-colors">Projects</Link>
-            <Link to="/opportunities" className="hover:text-heading dark:hover:text-white transition-colors">Opportunities</Link>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-heading dark:hover:text-white transition-colors">GitHub</a>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900/50">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">Live Activity Preview</p>
+              <div className="mt-4 space-y-3">
+                {[
+                  "Nisha created a Next.js + Supabase project and invited frontend collaborators.",
+                  "Arjun posted an opening for a hackathon AI engineer role.",
+                  "Team GridFlow closed a milestone and published progress update.",
+                ].map((line) => (
+                  <div
+                    key={line}
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  >
+                    {line}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+      </section>
     </div>
   );
 }

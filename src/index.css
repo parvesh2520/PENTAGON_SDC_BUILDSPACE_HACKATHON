@@ -86,4 +86,24 @@
   .animate-soft-pulse {
     animation: softPulse 2s ease-in-out infinite;
   }
+
+  .app-shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .panel {
+    @apply rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-800/95 shadow-sm;
+  }
+
+  .panel-hover {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand-500/10;
+  }
+
+  .section-title {
+    @apply text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-white;
+  }
+
+  .section-subtitle {
+    @apply text-sm sm:text-base text-slate-600 dark:text-slate-300;
+  }
 }

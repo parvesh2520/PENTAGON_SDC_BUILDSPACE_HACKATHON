@@ -6,7 +6,7 @@
   grouped by category so the Search page can show tabs.
 */
 
-import { useState, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { debounce } from "../utils/debounce";
 
@@ -16,7 +16,7 @@ export function useSearch() {
   const [query, setQuery]     = useState("");
 
   // the actual search — runs after the debounce fires
-  async function doSearch(term) {
+  const doSearch = useCallback(async (term) => {
     if (!term || term.length < 2) {
       setResults({ people: [], projects: [], opportunities: [] });
       return;
@@ -53,11 +53,13 @@ export function useSearch() {
     });
 
     setLoading(false);
-  }
+  }, []);
 
   // wrap doSearch in a 350ms debounce so rapid typing doesn't
   // spam the database
-  const debouncedSearch = useCallback(debounce(doSearch, 350), []);
+  const debouncedSearch = useMemo(() => debounce(doSearch, 350), [doSearch]);
+
+  useEffect(() => () => debouncedSearch.cancel?.(), [debouncedSearch]);
 
   function handleChange(value) {
     setQuery(value);

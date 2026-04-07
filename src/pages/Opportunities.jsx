@@ -6,7 +6,7 @@
   Logged-in users can post new opportunities via the modal.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import useAuthStore from "../store/authStore";
 import PageWrapper from "../components/layout/PageWrapper";
@@ -22,13 +22,11 @@ export default function Opportunities() {
   const [search, setSearch]       = useState("");
   const [typeFilter, setType]     = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    loadData();
-  }, [typeFilter]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true);
+    setError(null);
 
     let query = supabase
       .from("opportunities")
@@ -39,10 +37,19 @@ export default function Opportunities() {
       query = query.eq("type", typeFilter);
     }
 
-    const { data } = await query;
+    const { data, error: loadError } = await query;
+    if (loadError) {
+      setError(loadError.message || "Failed to load opportunities.");
+      setLoading(false);
+      return;
+    }
     setOpps(data || []);
     setLoading(false);
-  }
+  }, [typeFilter]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const filtered = opps.filter((o) =>
     o.title.toLowerCase().includes(search.toLowerCase())
@@ -94,6 +101,12 @@ export default function Opportunities() {
       </div>
 
       {/* grid */}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-200">
+          {error}
+        </div>
+      )}
+
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4].map((i) => (

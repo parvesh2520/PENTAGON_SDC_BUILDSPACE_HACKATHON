@@ -36,7 +36,7 @@ export default function Feed() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6">
+    <div className="app-shell py-6">
       <div className="flex gap-6">
         {/* left sidebar */}
         <Sidebar />
@@ -47,7 +47,7 @@ export default function Feed() {
           {user && (
             <form
               onSubmit={handleQuickPost}
-              className="rounded-xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-4"
+              className="panel p-4"
             >
               <div className="flex gap-3">
                 <Avatar
@@ -79,7 +79,7 @@ export default function Feed() {
         <aside className="hidden xl:block w-64 shrink-0">
           <div className="sticky top-20 space-y-6">
             {/* trending skills */}
-            <div className="rounded-xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+            <div className="panel p-5">
               <h3 className="text-sm font-semibold text-heading dark:text-white mb-3">Trending Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {trendingSkills.map((s) => (
@@ -94,7 +94,7 @@ export default function Feed() {
             </div>
 
             {/* quick CTA */}
-            <div className="rounded-xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-5 text-center">
+            <div className="panel p-5 text-center">
               <p className="text-sm text-body dark:text-slate-400 mb-3">
                 Have a project idea?
               </p>

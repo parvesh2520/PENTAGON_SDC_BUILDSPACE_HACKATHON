@@ -95,6 +95,7 @@ export default function Profile() {
 
       {/* edit drawer (only renders when isOwn) */}
       <EditProfileDrawer
+        key={`${profile.id}-${drawerOpen ? "open" : "closed"}`}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         profile={profile}

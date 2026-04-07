@@ -6,7 +6,7 @@
   it falls back to the currently logged-in user.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import useAuthStore from "../store/authStore";
 
@@ -15,11 +15,7 @@ export function useProfile(identifier) {
   const [profile, setProfile]   = useState(null);
   const [loading, setLoading]   = useState(true);
 
-  useEffect(() => {
-    fetchProfile();
-  }, [identifier, currentUser]);
-
-  async function fetchProfile() {
+  const fetchProfile = useCallback(async () => {
     setLoading(true);
 
     let query = supabase.from("profiles").select("*");
@@ -40,7 +36,11 @@ export function useProfile(identifier) {
     const { data, error } = await query.single();
     if (!error) setProfile(data);
     setLoading(false);
-  }
+  }, [identifier, currentUser]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   // update fields on the logged-in user's own profile
   async function updateProfile(updates) {

@@ -5,7 +5,7 @@
   and read/unread state. Users can mark individual items or all as read.
 */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import useAuthStore from "../../store/authStore";
 import Badge from "../ui/Badge";
@@ -22,23 +22,32 @@ export default function NotificationList() {
   const user = useAuthStore((s) => s.user);
   const [items, setItems]     = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const loadNotifications = useCallback(async () => {
     if (!user) return;
-    loadNotifications();
-  }, [user]);
-
-  async function loadNotifications() {
-    const { data } = await supabase
+    setError(null);
+    const { data, error: loadError } = await supabase
       .from("notifications")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
 
+    if (loadError) {
+      setError(loadError.message || "Could not load notifications.");
+      setLoading(false);
+      return;
+    }
+
     setItems(data || []);
     setLoading(false);
-  }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    loadNotifications();
+  }, [user, loadNotifications]);
 
   async function markAllRead() {
     await supabase
@@ -67,6 +76,14 @@ export default function NotificationList() {
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="h-16 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-4 py-4 text-sm text-red-700 dark:text-red-200">
+        {error}
       </div>
     );
   }
