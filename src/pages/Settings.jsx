@@ -1,11 +1,8 @@
 /*
   Settings.jsx
   ------------
-  User settings page. Sections:
-  - Account (email, password change)
-  - Profile (name, bio, avatar upload to Supabase Storage)
-  - Theme toggle
-  - Danger zone (account deletion)
+  Dark-themed settings page with glassmorphic sections.
+  Sections: Profile, Appearance, Account, Danger Zone, System Health.
 */
 
 import { useState, useEffect } from "react";
@@ -24,6 +21,7 @@ import {
   HiOutlineRefresh,
   HiOutlineCheckCircle,
   HiOutlineExclamationCircle,
+  HiOutlineCog,
 } from "react-icons/hi";
 
 export default function Settings() {
@@ -33,7 +31,6 @@ export default function Settings() {
   const toggle   = useThemeStore((s) => s.toggle);
   const { profile, updateProfile } = useProfile();
 
-  // form states
   const [profileDraft, setProfileDraft] = useState(null);
   const [newPassword, setNewPassword] = useState("");
   const [uploading, setUploading]     = useState(false);
@@ -45,7 +42,6 @@ export default function Settings() {
   const displayName = profileDraft?.display_name ?? profile?.display_name ?? "";
   const bio = profileDraft?.bio ?? profile?.bio ?? "";
 
-  // handle avatar file upload
   async function handleAvatarUpload(e) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -74,6 +70,8 @@ export default function Settings() {
 
       await updateProfile({ avatar_url: urlData.publicUrl });
       setMsg("Avatar updated!");
+    } else {
+      setMsg("Upload failed: " + error.message);
     }
 
     setUploading(false);
@@ -111,7 +109,6 @@ export default function Settings() {
     setChecksLoading(false);
   }
 
-  // save profile changes
   async function saveProfile() {
     setSaving(true);
     await updateProfile({ display_name: displayName, bio });
@@ -120,7 +117,6 @@ export default function Settings() {
     setSaving(false);
   }
 
-  // update password
   async function changePassword() {
     if (!newPassword || newPassword.length < 6) {
       setMsg("Password must be at least 6 characters.");
@@ -136,7 +132,6 @@ export default function Settings() {
     }
   }
 
-  // delete account (soft — just sign out and remove profile)
   async function deleteAccount() {
     const confirmed = window.confirm(
       "Are you sure? This will delete your profile and sign you out."
@@ -147,28 +142,30 @@ export default function Settings() {
     signOut();
   }
 
-  // auto-dismiss the status message after a few seconds
   useEffect(() => {
     if (msg) {
-      const t = setTimeout(() => setMsg(null), 3000);
+      const t = setTimeout(() => setMsg(null), 4000);
       return () => clearTimeout(t);
     }
   }, [msg]);
 
   return (
     <PageWrapper className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-heading dark:text-white mb-8">Settings</h1>
+      <h1 className="font-display text-2xl font-bold text-white mb-8 flex items-center gap-2">
+        <HiOutlineCog className="w-6 h-6 text-violet-400" />
+        Settings
+      </h1>
 
       {/* toast message */}
       {msg && (
-        <div className="mb-6 rounded-lg bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 px-4 py-3 text-sm text-brand-700 dark:text-brand-300">
+        <div className="mb-6 rounded-xl bg-violet-500/10 border border-violet-500/20 px-4 py-3 text-sm text-violet-300 animate-fade-up">
           {msg}
         </div>
       )}
 
       {/* --- Profile Section --- */}
-      <section className="rounded-2xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-heading dark:text-white mb-5">Profile</h2>
+      <section className="card p-6 mb-6">
+        <h2 className="font-display text-lg font-semibold text-white mb-5">Profile</h2>
 
         {/* avatar upload */}
         <div className="flex items-center gap-5 mb-6">
@@ -178,12 +175,12 @@ export default function Settings() {
             size="lg"
           />
           <div>
-            <label className="inline-flex items-center gap-2 rounded-lg border border-border dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 text-sm font-medium text-heading dark:text-white hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors cursor-pointer">
+            <label className="inline-flex items-center gap-2 rounded-xl border border-violet-500/20 bg-slate-800/60 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-700/60 hover:border-violet-500/30 transition-all cursor-pointer">
               <HiOutlineUpload className="w-4 h-4" />
               {uploading ? "Uploading…" : "Upload Avatar"}
               <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
             </label>
-            <p className="text-xs text-muted mt-1">Max 2 MB, JPG or PNG</p>
+            <p className="text-xs text-slate-500 mt-1.5">Max 2 MB · PNG, JPG, or WEBP</p>
           </div>
         </div>
 
@@ -200,7 +197,7 @@ export default function Settings() {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-heading dark:text-slate-200">Bio</label>
+            <label className="text-sm font-medium text-slate-300">Bio</label>
             <textarea
               rows={3}
               value={bio}
@@ -210,7 +207,7 @@ export default function Settings() {
                   bio: e.target.value,
                 }))
               }
-              className="w-full rounded-lg border border-border dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-heading dark:text-white placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+              className="w-full rounded-xl border border-violet-500/15 bg-slate-800/60 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-none transition-all"
             />
           </div>
 
@@ -220,31 +217,31 @@ export default function Settings() {
         </div>
       </section>
 
-      {/* --- Theme Section --- */}
-      <section className="rounded-2xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-heading dark:text-white mb-4">Appearance</h2>
+      {/* --- Appearance Section --- */}
+      <section className="card p-6 mb-6">
+        <h2 className="font-display text-lg font-semibold text-white mb-4">Appearance</h2>
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-heading dark:text-white">Dark Mode</p>
-            <p className="text-xs text-muted mt-0.5">Switch between light and dark theme</p>
+            <p className="text-sm font-medium text-white">Dark Mode</p>
+            <p className="text-xs text-slate-500 mt-0.5">Switch between light and dark theme</p>
           </div>
 
           <button
             onClick={toggle}
             className={
-              "relative w-14 h-7 rounded-full transition-colors cursor-pointer " +
-              (theme === "dark" ? "bg-brand-600" : "bg-slate-300")
+              "relative w-14 h-7 rounded-full transition-colors duration-300 cursor-pointer " +
+              (theme === "dark" ? "bg-violet-600" : "bg-slate-600")
             }
           >
             <span
               className={
-                "absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform flex items-center justify-center " +
+                "absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow-lg transition-transform duration-300 flex items-center justify-center " +
                 (theme === "dark" ? "translate-x-7" : "")
               }
             >
               {theme === "dark"
-                ? <HiOutlineMoon className="w-3.5 h-3.5 text-brand-600" />
+                ? <HiOutlineMoon className="w-3.5 h-3.5 text-violet-600" />
                 : <HiOutlineSun className="w-3.5 h-3.5 text-amber-500" />
               }
             </span>
@@ -253,15 +250,15 @@ export default function Settings() {
       </section>
 
       {/* --- Account / Password --- */}
-      <section className="rounded-2xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-6 mb-6">
-        <h2 className="text-lg font-semibold text-heading dark:text-white mb-5">Account</h2>
+      <section className="card p-6 mb-6">
+        <h2 className="font-display text-lg font-semibold text-white mb-5">Account</h2>
 
         <div className="space-y-4">
           <Input
             label="Email"
             value={user?.email || ""}
             disabled
-            className="opacity-60"
+            className="opacity-50"
           />
 
           <Input
@@ -279,9 +276,9 @@ export default function Settings() {
       </section>
 
       {/* --- Danger Zone --- */}
-      <section className="rounded-2xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10 p-6">
-        <h2 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">Danger Zone</h2>
-        <p className="text-sm text-red-600 dark:text-red-400/80 mb-4">
+      <section className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 mb-6">
+        <h2 className="font-display text-lg font-semibold text-red-400 mb-2">Danger Zone</h2>
+        <p className="text-sm text-red-400/70 mb-4">
           Deleting your account removes your profile and signs you out. This can't be undone easily.
         </p>
         <Button variant="danger" onClick={deleteAccount}>
@@ -290,15 +287,15 @@ export default function Settings() {
       </section>
 
       {/* --- Supabase System Check --- */}
-      <section className="rounded-2xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-6 mt-6">
+      <section className="card p-6">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div>
-            <h2 className="text-lg font-semibold text-heading dark:text-white">System Health Check</h2>
-            <p className="text-xs text-muted mt-1">Verify Supabase tables, storage bucket, and auth endpoint.</p>
+            <h2 className="font-display text-lg font-semibold text-white">System Health Check</h2>
+            <p className="text-xs text-slate-500 mt-1">Verify Supabase tables, storage bucket, and auth endpoint.</p>
           </div>
-          <Button variant="secondary" onClick={runSystemChecks} disabled={checksLoading}>
-            <HiOutlineRefresh className="w-4 h-4" />
-            {checksLoading ? "Checking..." : "Run Check"}
+          <Button variant="secondary" size="sm" onClick={runSystemChecks} disabled={checksLoading}>
+            <HiOutlineRefresh className={`w-4 h-4 ${checksLoading ? "animate-spin" : ""}`} />
+            {checksLoading ? "Checking…" : "Run Check"}
           </Button>
         </div>
 
@@ -307,26 +304,28 @@ export default function Settings() {
             {systemChecks.map((check) => (
               <li
                 key={check.label}
-                className={`rounded-lg border px-3 py-2 text-sm flex items-center justify-between gap-3 ${
+                className={`rounded-xl border px-4 py-3 text-sm flex items-center justify-between gap-3 ${
                   check.ok
-                    ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20"
-                    : "border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20"
+                    ? "border-emerald-500/20 bg-emerald-500/5"
+                    : "border-red-500/20 bg-red-500/5"
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   {check.ok ? (
-                    <HiOutlineCheckCircle className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-300" />
+                    <HiOutlineCheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
                   ) : (
-                    <HiOutlineExclamationCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-300" />
+                    <HiOutlineExclamationCircle className="w-4 h-4 shrink-0 text-red-400" />
                   )}
-                  <span className="text-heading dark:text-white">{check.label}</span>
+                  <span className="text-white">{check.label}</span>
                 </div>
-                <span className="text-xs text-muted truncate max-w-[50%] text-right">{check.detail}</span>
+                <span className="text-xs text-slate-500 truncate max-w-[45%] text-right">
+                  {check.detail}
+                </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted">Run the check to validate backend connections.</p>
+          <p className="text-sm text-slate-500">Run the check to validate backend connections.</p>
         )}
       </section>
     </PageWrapper>

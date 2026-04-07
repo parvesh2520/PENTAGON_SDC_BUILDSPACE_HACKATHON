@@ -1,8 +1,8 @@
 /*
   EditProfileDrawer.jsx
   ---------------------
-  Slide-over drawer (from the right) for editing your own profile.
-  Updates the `profiles` table and refreshes on save.
+  Slide-over drawer for editing your own profile.
+  Dark glassmorphic design with violet accents.
 */
 
 import { useState } from "react";
@@ -33,16 +33,16 @@ export default function EditProfileDrawer({ open, onClose, profile, onSave }) {
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* backdrop */}
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* drawer panel */}
-      <div className="relative w-full max-w-md bg-white dark:bg-slate-800 h-full overflow-y-auto shadow-xl animate-fade-up">
+      <div className="relative w-full max-w-md bg-slate-900/95 backdrop-blur-xl h-full overflow-y-auto shadow-2xl border-l border-violet-500/10 animate-fade-up">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-heading dark:text-white">Edit Profile</h2>
+            <h2 className="font-display text-lg font-semibold text-white">Edit Profile</h2>
             <button
               onClick={onClose}
-              className="p-1 rounded text-muted hover:text-heading dark:hover:text-white cursor-pointer"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
             >
               ✕
             </button>
@@ -56,18 +56,18 @@ export default function EditProfileDrawer({ open, onClose, profile, onSave }) {
             />
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-heading dark:text-slate-200">Bio</label>
+              <label className="text-sm font-medium text-slate-300">Bio</label>
               <textarea
                 rows={4}
                 value={form.bio}
                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
-                className="w-full rounded-lg border border-border dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-heading dark:text-white placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+                className="w-full rounded-xl border border-violet-500/15 bg-slate-800/60 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-none transition-all"
                 placeholder="Tell others about yourself…"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-heading dark:text-slate-200 mb-2 block">Skills</label>
+              <label className="text-sm font-medium text-slate-300 mb-2 block">Skills</label>
               <SkillsGrid
                 skills={form.skills}
                 editable

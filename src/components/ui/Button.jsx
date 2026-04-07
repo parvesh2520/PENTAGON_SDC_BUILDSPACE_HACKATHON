@@ -1,31 +1,34 @@
 /*
   Button.jsx
   ----------
-  Reusable button with a few variants: primary, secondary, ghost, danger.
-  Keeps the codebase consistent instead of ad-hoc className strings.
+  Premium button component with gradient glow effects.
+  Variants: primary (gradient), secondary (glass), ghost, danger.
 */
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-lg font-medium " +
-  "transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-400 " +
-  "focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer";
+  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold " +
+  "transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-400/50 " +
+  "focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer " +
+  "active:scale-[0.97]";
 
 const sizes = {
-  sm: "px-3 py-1.5 text-sm",
+  sm: "px-4 py-2 text-sm",
   md: "px-5 py-2.5 text-sm",
-  lg: "px-6 py-3 text-base",
+  lg: "px-7 py-3.5 text-base",
 };
 
 const variants = {
   primary:
-    "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm",
+    "bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-lg shadow-violet-500/25 " +
+    "hover:shadow-violet-500/40 hover:brightness-110",
   secondary:
-    "bg-white dark:bg-slate-800 text-heading dark:text-slate-200 border border-border " +
-    "dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700",
+    "bg-slate-800/80 text-slate-200 border border-violet-500/20 backdrop-blur-sm " +
+    "hover:border-violet-500/40 hover:bg-slate-700/80 hover:shadow-lg hover:shadow-violet-500/10",
   ghost:
-    "text-body dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
+    "text-slate-300 hover:bg-slate-800/60 hover:text-white",
   danger:
-    "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
+    "bg-gradient-to-r from-red-600 to-rose-500 text-white shadow-lg shadow-red-500/25 " +
+    "hover:shadow-red-500/40 hover:brightness-110",
 };
 
 export default function Button({

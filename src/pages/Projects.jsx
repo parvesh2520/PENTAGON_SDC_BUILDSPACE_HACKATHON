@@ -1,142 +1,120 @@
 /*
   Projects.jsx
   ------------
-  Browsable project list with search, tech-stack filter,
-  and status filter. Plus a "Create Project" button that
-  opens the modal.
+  Project listing page with glassmorphic cards and filtering.
+  Features: search/filter, create project modal, premium card hover effects.
 */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
 import useAuthStore from "../store/authStore";
 import PageWrapper from "../components/layout/PageWrapper";
 import ProjectCard from "../components/projects/ProjectCard";
-import CreateProjectModal from "../components/projects/CreateProjectModal";
+import CreateProject from "../components/projects/CreateProjectModal";
 import Button from "../components/ui/Button";
-import { HiOutlinePlus, HiOutlineSearch } from "react-icons/hi";
+import { HiOutlinePlus, HiOutlineSearch, HiOutlineCollection } from "react-icons/hi";
 
 export default function Projects() {
   const user = useAuthStore((s) => s.user);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [search, setSearch]     = useState("");
-  const [status, setStatus]     = useState("all"); // all | open | closed
-  const [modalOpen, setModalOpen] = useState(false);
-  const [error, setError] = useState(null);
-
-  const loadProjects = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    let query = supabase
-      .from("projects")
-      .select("*, project_members(user_id, role, profiles(display_name, avatar_url))")
-      .order("created_at", { ascending: false });
-
-    if (status !== "all") {
-      query = query.eq("status", status);
-    }
-
-    const { data, error: loadError } = await query;
-    if (loadError) {
-      setError(loadError.message || "Failed to load projects.");
-      setLoading(false);
-      return;
-    }
-
-    // reshape — flatten members for the card
-    const shaped = (data || []).map((p) => ({
-      ...p,
-      members: p.project_members || [],
-    }));
-
-    setProjects(shaped);
-    setLoading(false);
-  }, [status]);
+  const [projects, setProjects]   = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [search, setSearch]       = useState("");
 
   useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
+    async function load() {
+      const { data } = await supabase
+        .from("projects")
+        .select("*, profiles(display_name, username, avatar_url)")
+        .order("created_at", { ascending: false });
 
-  // client-side search filter (searching by title)
-  const filtered = projects.filter((p) =>
-    p.title.toLowerCase().includes(search.toLowerCase())
+      setProjects(data || []);
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  const filtered = projects.filter(
+    (p) =>
+      p.title?.toLowerCase().includes(search.toLowerCase()) ||
+      p.description?.toLowerCase().includes(search.toLowerCase()) ||
+      p.tech_stack?.some((t) => t.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
     <PageWrapper>
-      {/* top bar */}
+      {/* header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <h1 className="text-2xl font-bold text-heading dark:text-white">Projects</h1>
-
+        <div>
+          <h1 className="font-display text-2xl font-bold text-white flex items-center gap-2">
+            <HiOutlineCollection className="w-6 h-6 text-violet-400" />
+            Projects
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">Discover projects or start your own</p>
+        </div>
         {user && (
-          <Button onClick={() => setModalOpen(true)}>
+          <Button onClick={() => setShowCreate(true)} size="sm">
             <HiOutlinePlus className="w-4 h-4" />
             New Project
           </Button>
         )}
       </div>
 
-      {/* filters row */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search projects…"
-            className="w-full rounded-lg border border-border dark:border-slate-600 bg-white dark:bg-slate-800 pl-10 pr-4 py-2 text-sm text-heading dark:text-white placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-400"
-          />
-        </div>
-
-        <div className="flex gap-2">
-          {["all", "open", "closed"].map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatus(s)}
-              className={
-                "rounded-lg px-4 py-2 text-sm font-medium capitalize transition-colors cursor-pointer " +
-                (status === s
-                  ? "bg-brand-600 text-white"
-                  : "bg-white dark:bg-slate-800 text-body dark:text-slate-300 border border-border dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700")
-              }
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+      {/* search bar */}
+      <div className="relative mb-8">
+        <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name, description, or tech…"
+          className="w-full rounded-xl border border-violet-500/15 bg-slate-800/60 pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 transition-all"
+        />
       </div>
 
       {/* project grid */}
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-200">
-          {error}
-        </div>
-      )}
-
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-52 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+            <div key={i} className="card p-6 animate-pulse">
+              <div className="h-4 bg-slate-800 rounded w-3/4 mb-3" />
+              <div className="h-3 bg-slate-800 rounded w-full mb-2" />
+              <div className="h-3 bg-slate-800 rounded w-5/6" />
+            </div>
           ))}
         </div>
-      ) : filtered.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((p) => (
-            <ProjectCard key={p.id} project={p} />
-          ))}
+      ) : filtered.length === 0 ? (
+        <div className="card p-16 text-center">
+          <HiOutlineCollection className="w-12 h-12 text-violet-500/20 mx-auto mb-4" />
+          <p className="text-slate-400 text-sm">
+            {search ? "No projects match your search." : "No projects yet. Be the first!"}
+          </p>
         </div>
       ) : (
-        <p className="text-center py-16 text-muted">No projects match your filters.</p>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((p, i) => (
+            <div key={p.id} className={`animate-fade-up delay-${Math.min(i * 100, 500)}`}>
+              <ProjectCard project={p} />
+            </div>
+          ))}
+        </div>
       )}
 
       {/* create modal */}
-      <CreateProjectModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreated={() => loadProjects()}
-      />
+      {showCreate && (
+        <CreateProject
+          onClose={() => setShowCreate(false)}
+          onCreated={() => {
+            setShowCreate(false);
+            /* reload projects */
+            supabase
+              .from("projects")
+              .select("*, profiles(display_name, username, avatar_url)")
+              .order("created_at", { ascending: false })
+              .then(({ data }) => setProjects(data || []));
+          }}
+        />
+      )}
     </PageWrapper>
   );
 }

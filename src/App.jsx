@@ -1,8 +1,8 @@
 /*
   App.jsx
   -------
-  Root component — sets up React Router with all routes
-  and wraps everything in the Navbar. Pretty standard stuff.
+  Root component — sets up React Router with all routes.
+  Dark AI-themed container with subtle mesh gradient background.
 */
 
 import { Routes, Route } from "react-router-dom";
@@ -21,7 +21,7 @@ import Settings from "./pages/Settings";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-surface dark:bg-slate-900 transition-colors duration-200">
+    <div className="min-h-screen bg-[#0a0a1a] text-slate-200 transition-colors duration-200">
       <Navbar />
       <ConnectionNotice />
 

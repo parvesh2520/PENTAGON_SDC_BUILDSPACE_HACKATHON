@@ -1,9 +1,8 @@
 /*
   SkillsGrid.jsx
   --------------
-  Renders a user's skills as editable chips.
-  If `editable` is true, shows a tiny input to add new skills
-  and clicking a chip removes it.
+  Renders skills as editable neon chips.
+  If editable, shows input to add and click to remove.
 */
 
 import { useState } from "react";
@@ -16,7 +15,6 @@ export default function SkillsGrid({ skills = [], editable = false, onChange }) 
     e.preventDefault();
     const trimmed = input.trim();
     if (!trimmed || skills.includes(trimmed)) return;
-
     onChange([...skills, trimmed]);
     setInput("");
   }
@@ -45,21 +43,27 @@ export default function SkillsGrid({ skills = [], editable = false, onChange }) 
       </div>
 
       {editable && (
-        <form onSubmit={addSkill} className="mt-3 flex gap-2">
+        <div className="mt-3 flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                addSkill(e);
+              }
+            }}
             placeholder="Add a skill…"
-            className="flex-1 rounded-lg border border-border dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-1.5 text-sm text-heading dark:text-white placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-400"
+            className="flex-1 rounded-xl border border-violet-500/15 bg-slate-800/60 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/40 transition-all"
           />
           <button
-            type="submit"
-            className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm text-white hover:bg-brand-700 cursor-pointer"
+            type="button"
+            onClick={addSkill}
+            className="rounded-xl bg-gradient-to-r from-violet-600 to-violet-500 px-4 py-1.5 text-sm font-medium text-white hover:brightness-110 transition-all cursor-pointer"
           >
             Add
           </button>
-        </form>
+        </div>
       )}
     </div>
   );

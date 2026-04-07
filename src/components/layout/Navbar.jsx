@@ -1,12 +1,12 @@
 /*
   Navbar.jsx
   ----------
-  Persistent top navigation bar — shows across every page.
-  Handles: logo, nav links, dark-mode toggle, login/signup CTAs,
-  and (when logged in) the notification bell + avatar dropdown.
+  Floating frosted-glass navigation bar with violet accent glow.
+  Features: gradient logo, pill-shaped active links, smooth mobile
+  drawer, avatar dropdown with glass effect.
 */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { HiOutlineMoon, HiOutlineSun, HiOutlineMenu, HiOutlineX } from "react-icons/hi";
 import useAuthStore from "../../store/authStore";
@@ -24,10 +24,31 @@ export default function Navbar() {
 
   const [menuOpen, setMenuOpen]     = useState(false);
   const [dropdownOpen, setDropdown] = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
+  const dropdownRef = useRef(null);
+
+  /* track scroll to intensify glass effect */
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  /* close dropdown on outside click */
+  useEffect(() => {
+    function handleClick(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   function handleSignOut() {
     signOut();
     navigate("/");
+    setDropdown(false);
   }
 
   const primaryLinks = [
@@ -38,44 +59,48 @@ export default function Navbar() {
   ];
 
   const guestLinks = [
-    { to: "/", label: "Home" },
-    { to: "/projects", label: "Projects" },
+    { to: "/",              label: "Home" },
+    { to: "/projects",      label: "Projects" },
     { to: "/opportunities", label: "Opportunities" },
   ];
 
+  const navLinkClass = ({ isActive }) =>
+    `relative px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+      isActive
+        ? "text-white bg-violet-500/15 shadow-sm shadow-violet-500/10"
+        : "text-slate-400 hover:text-white hover:bg-white/5"
+    }`;
+
   return (
-    <nav className="sticky top-0 z-40 w-full border-b border-slate-200/80 dark:border-slate-700/80 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl">
+    <nav
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        scrolled
+          ? "bg-slate-900/80 backdrop-blur-2xl border-b border-violet-500/10 shadow-lg shadow-violet-500/5"
+          : "bg-transparent border-b border-transparent"
+      }`}
+    >
       <div className="app-shell flex h-16 items-center justify-between">
         {/* --- logo --- */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-heading dark:text-white tracking-tight">
-          <span className="bg-gradient-to-r from-brand-600 to-violet-500 bg-clip-text text-transparent">Build</span>Space
+        <Link to="/" className="flex items-center gap-1 font-display font-bold text-xl tracking-tight group">
+          <span className="text-gradient">Build</span>
+          <span className="text-white group-hover:text-violet-200 transition-colors">Space</span>
         </Link>
 
         {/* --- desktop nav links --- */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-1">
           {(user ? primaryLinks : guestLinks).map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                className={({ isActive }) =>
-                  `text-sm transition-colors ${
-                    isActive
-                      ? "text-brand-600 dark:text-brand-400 font-semibold"
-                      : "text-body dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400"
-                  }`
-                }
-              >
-                {l.label}
-              </NavLink>
-            ))}
+            <NavLink key={l.to} to={l.to} className={navLinkClass}>
+              {l.label}
+            </NavLink>
+          ))}
         </div>
 
         {/* --- right side controls --- */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* theme toggle */}
           <button
             onClick={toggle}
-            className="p-2 rounded-lg text-body dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
             aria-label="Toggle dark mode"
           >
             {theme === "dark" ? <HiOutlineSun className="w-5 h-5" /> : <HiOutlineMoon className="w-5 h-5" />}
@@ -87,8 +112,11 @@ export default function Navbar() {
               <NotificationBell />
 
               {/* avatar dropdown */}
-              <div className="relative">
-                <button onClick={() => setDropdown(!dropdownOpen)} className="cursor-pointer">
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setDropdown(!dropdownOpen)}
+                  className="cursor-pointer rounded-full transition-all hover:ring-2 hover:ring-violet-500/30"
+                >
                   <Avatar
                     src={user.user_metadata?.avatar_url}
                     name={user.user_metadata?.display_name || user.email}
@@ -97,25 +125,31 @@ export default function Navbar() {
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-slate-800 border border-border dark:border-slate-700 shadow-lg py-1 animate-fade-up">
+                  <div className="absolute right-0 mt-2 w-52 rounded-xl bg-slate-900/95 backdrop-blur-xl border border-violet-500/15 shadow-2xl shadow-black/40 py-1.5 animate-slide-down">
+                    <div className="px-4 py-2 border-b border-violet-500/10">
+                      <p className="text-sm font-medium text-white truncate">
+                        {user.user_metadata?.display_name || "Developer"}
+                      </p>
+                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                    </div>
                     <Link
                       to={`/u/${user.user_metadata?.username || user.id}`}
-                      className="block px-4 py-2 text-sm text-body dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-violet-500/10 transition-colors"
                       onClick={() => setDropdown(false)}
                     >
                       My Profile
                     </Link>
                     <Link
                       to="/settings"
-                      className="block px-4 py-2 text-sm text-body dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-violet-500/10 transition-colors"
                       onClick={() => setDropdown(false)}
                     >
                       Settings
                     </Link>
-                    <hr className="my-1 border-border dark:border-slate-700" />
+                    <hr className="my-1 border-violet-500/10" />
                     <button
                       onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer"
+                      className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
                     >
                       Sign Out
                     </button>
@@ -137,7 +171,7 @@ export default function Navbar() {
 
           {/* mobile hamburger */}
           <button
-            className="md:hidden p-2 text-body dark:text-slate-300 cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="md:hidden p-2 text-slate-400 hover:text-white cursor-pointer rounded-xl hover:bg-white/5 transition-all"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <HiOutlineX className="w-6 h-6" /> : <HiOutlineMenu className="w-6 h-6" />}
@@ -147,42 +181,27 @@ export default function Navbar() {
 
       {/* --- mobile drawer --- */}
       {menuOpen && (
-        <div className="md:hidden border-t border-border dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 px-4 pb-4 animate-fade-up">
-          {user ? (
-            primaryLinks.map((l) => (
+        <div className="md:hidden border-t border-violet-500/10 bg-slate-900/95 backdrop-blur-2xl px-4 pb-4 pt-2 animate-slide-down">
+          <div className="flex flex-col gap-1">
+            {(user ? primaryLinks : guestLinks).map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
                 className={({ isActive }) =>
-                  `block rounded-lg px-2 py-2 text-sm ${
+                  `block rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                     isActive
-                      ? "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300"
-                      : "text-body dark:text-slate-300"
+                      ? "bg-violet-500/15 text-white"
+                      : "text-slate-400 hover:text-white hover:bg-white/5"
                   }`
                 }
                 onClick={() => setMenuOpen(false)}
               >
                 {l.label}
               </NavLink>
-            ))
-          ) : (
-            <div className="flex flex-col gap-2 pt-2">
-              {guestLinks.map((l) => (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  onClick={() => setMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `block rounded-lg px-2 py-2 text-sm ${
-                      isActive
-                        ? "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300"
-                        : "text-body dark:text-slate-300"
-                    }`
-                  }
-                >
-                  {l.label}
-                </NavLink>
-              ))}
+            ))}
+          </div>
+          {!user && (
+            <div className="flex flex-col gap-2 pt-3 border-t border-violet-500/10 mt-3">
               <Button variant="ghost" onClick={() => { navigate("/auth"); setMenuOpen(false); }}>
                 Log In
               </Button>

@@ -1,32 +1,25 @@
 /*
   NotificationList.jsx
   --------------------
-  Full-page notification list. Each item shows a message, type badge,
-  and read/unread state. Users can mark individual items or all as read.
+  Full notification list with dark AI-themed styling.
+  Displays read/unread states with violet accent indicators.
 */
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import useAuthStore from "../../store/authStore";
-import Badge from "../ui/Badge";
-import Button from "../ui/Button";
 import { timeAgo } from "../../utils/formatDate";
-
-const typeColour = {
-  join_request: "brand",
-  mention:      "green",
-  update:       "yellow",
-};
+import { HiOutlineBell, HiOutlineCheck } from "react-icons/hi";
 
 export default function NotificationList() {
   const user = useAuthStore((s) => s.user);
-  const [items, setItems]     = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const loadNotifications = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data, error: loadError } = await supabase
       .from("notifications")
       .select("*")
       .eq("user_id", user.id)
@@ -34,98 +27,107 @@ export default function NotificationList() {
       .limit(50);
 
     if (loadError) {
-      setError(loadError.message || "Could not load notifications.");
-      setLoading(false);
-      return;
+      setError(loadError.message);
+    } else {
+      setNotifications(data || []);
     }
-
-    setItems(data || []);
     setLoading(false);
   }, [user]);
 
   useEffect(() => {
-    if (!user) return;
     loadNotifications();
-  }, [user, loadNotifications]);
+  }, [loadNotifications]);
+
+  async function toggleRead(id, currentRead) {
+    await supabase
+      .from("notifications")
+      .update({ read: !currentRead })
+      .eq("id", id);
+
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: !currentRead } : n))
+    );
+  }
 
   async function markAllRead() {
+    if (!user) return;
     await supabase
       .from("notifications")
       .update({ read: true })
       .eq("user_id", user.id)
       .eq("read", false);
 
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   }
 
-  async function toggleRead(id, currentState) {
-    await supabase
-      .from("notifications")
-      .update({ read: !currentState })
-      .eq("id", id);
-
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: !currentState } : n))
-    );
-  }
-
-  if (loading) {
+  if (!user) {
     return (
-      <div className="space-y-3">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-16 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 px-4 py-4 text-sm text-red-700 dark:text-red-200">
-        {error}
+      <div className="card p-12 text-center">
+        <p className="text-slate-400">Log in to see your notifications.</p>
       </div>
     );
   }
 
   return (
     <div>
-      {/* header row */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-heading dark:text-white">Notifications</h2>
-        {items.some((n) => !n.read) && (
-          <Button variant="ghost" size="sm" onClick={markAllRead}>
+        <h1 className="font-display text-2xl font-bold text-white flex items-center gap-2">
+          <HiOutlineBell className="w-6 h-6 text-violet-400" />
+          Notifications
+        </h1>
+        {notifications.some((n) => !n.read) && (
+          <button
+            onClick={markAllRead}
+            className="text-sm font-medium text-violet-400 hover:text-violet-300 transition-colors cursor-pointer flex items-center gap-1"
+          >
+            <HiOutlineCheck className="w-4 h-4" />
             Mark all read
-          </Button>
+          </button>
         )}
       </div>
 
-      {items.length === 0 ? (
-        <p className="text-center py-12 text-muted">You're all caught up!</p>
+      {error && (
+        <div className="card px-4 py-3 text-sm text-red-400 border-red-500/20 mb-4">
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="card p-4 animate-pulse">
+              <div className="h-3 bg-slate-800 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-slate-800 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : notifications.length === 0 ? (
+        <div className="card p-12 text-center">
+          <HiOutlineBell className="w-10 h-10 text-violet-500/20 mx-auto mb-3" />
+          <p className="text-slate-400 text-sm">No notifications yet</p>
+        </div>
       ) : (
-        <ul className="space-y-2">
-          {items.map((n) => (
-            <li
+        <div className="space-y-2">
+          {notifications.map((n) => (
+            <button
               key={n.id}
               onClick={() => toggleRead(n.id, n.read)}
-              className={
-                "flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors " +
-                (n.read
-                  ? "border-border dark:border-slate-700 bg-white dark:bg-slate-800/50 opacity-70"
-                  : "border-brand-200 dark:border-brand-800 bg-brand-50 dark:bg-brand-900/20")
-              }
+              className={`w-full text-left card p-4 flex items-start gap-3 cursor-pointer transition-all ${
+                n.read ? "opacity-60" : "border-violet-500/20"
+              }`}
             >
-              {/* unread dot */}
-              {!n.read && <span className="mt-1.5 h-2 w-2 rounded-full bg-brand-500 shrink-0" />}
-
+              <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                n.read ? "bg-slate-600" : "bg-violet-400 animate-soft-pulse"
+              }`} />
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-heading dark:text-white">{n.message}</p>
-                <p className="text-xs text-muted mt-1">{timeAgo(n.created_at)}</p>
+                <p className={`text-sm ${n.read ? "text-slate-400" : "text-white"}`}>
+                  {n.message}
+                </p>
+                <p className="text-xs text-slate-600 mt-1">{timeAgo(n.created_at)}</p>
               </div>
-
-              <Badge color={typeColour[n.type] || "slate"}>{n.type.replace("_", " ")}</Badge>
-            </li>
+            </button>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

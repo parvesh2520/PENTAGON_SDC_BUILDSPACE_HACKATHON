@@ -1,8 +1,8 @@
 /*
   Avatar.jsx
   ----------
-  Circular user avatar. Falls back to initials when there's no image URL.
-  Sizes: sm (32px), md (40px), lg (64px), xl (96px).
+  Circular user avatar with violet ring glow.
+  Falls back to gradient initials when there's no image URL.
 */
 
 const sizeMap = {
@@ -30,18 +30,18 @@ export default function Avatar({ src, name, size = "md", className = "" }) {
       <img
         src={src}
         alt={name || "User avatar"}
-        className={`${sizeClass} rounded-full object-cover ring-2 ring-white dark:ring-slate-700 ${className}`}
+        className={`${sizeClass} rounded-full object-cover ring-2 ring-violet-500/30 ${className}`}
       />
     );
   }
 
-  // fallback — coloured circle with initials
+  /* fallback — gradient circle with initials */
   return (
     <div
       className={
         `${sizeClass} rounded-full flex items-center justify-center ` +
-        "bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300 " +
-        "font-semibold select-none " +
+        "bg-gradient-to-br from-violet-600/30 to-cyan-500/20 text-violet-200 " +
+        "font-semibold select-none ring-2 ring-violet-500/20 " +
         className
       }
     >

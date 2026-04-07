@@ -2,8 +2,7 @@
   Profile.jsx
   -----------
   User profile page at /u/:username.
-  Shows the profile header, skills grid, and a list of
-  projects the user owns or belongs to.
+  Dark glassmorphic design with violet accents.
 */
 
 import { useState, useEffect } from "react";
@@ -16,6 +15,7 @@ import ProfileHeader from "../components/profile/ProfileHeader";
 import SkillsGrid from "../components/profile/SkillsGrid";
 import EditProfileDrawer from "../components/profile/EditProfileDrawer";
 import ProjectCard from "../components/projects/ProjectCard";
+import { HiOutlineCode, HiOutlineCollection } from "react-icons/hi";
 
 export default function Profile() {
   const { username } = useParams();
@@ -25,10 +25,8 @@ export default function Profile() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [projects, setProjects]     = useState([]);
 
-  // determine if this is the logged-in user's own profile
   const isOwn = currentUser && profile && currentUser.id === profile.id;
 
-  // grab the projects this user is part of
   useEffect(() => {
     if (!profile) return;
 
@@ -47,7 +45,18 @@ export default function Profile() {
   if (loading) {
     return (
       <PageWrapper>
-        <div className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+        <div className="space-y-4">
+          <div className="card p-8 animate-pulse">
+            <div className="flex gap-6">
+              <div className="w-24 h-24 rounded-full bg-slate-800" />
+              <div className="flex-1 space-y-3">
+                <div className="h-5 bg-slate-800 rounded w-1/3" />
+                <div className="h-3 bg-slate-800 rounded w-1/4" />
+                <div className="h-3 bg-slate-800 rounded w-2/3" />
+              </div>
+            </div>
+          </div>
+        </div>
       </PageWrapper>
     );
   }
@@ -55,7 +64,9 @@ export default function Profile() {
   if (!profile) {
     return (
       <PageWrapper>
-        <p className="text-center py-20 text-muted text-lg">User not found.</p>
+        <div className="card p-16 text-center">
+          <p className="text-slate-400 text-lg">User not found.</p>
+        </div>
       </PageWrapper>
     );
   }
@@ -70,14 +81,21 @@ export default function Profile() {
         />
 
         {/* skills section */}
-        <section>
-          <h2 className="text-lg font-semibold text-heading dark:text-white mb-4">Skills</h2>
+        <section className="card p-6">
+          <h2 className="font-display text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <HiOutlineCode className="w-5 h-5 text-violet-400" />
+            Skills
+          </h2>
           <SkillsGrid skills={profile.skills || []} />
+          {(!profile.skills || profile.skills.length === 0) && (
+            <p className="text-sm text-slate-500">No skills listed yet.</p>
+          )}
         </section>
 
         {/* projects section */}
         <section>
-          <h2 className="text-lg font-semibold text-heading dark:text-white mb-4">
+          <h2 className="font-display text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <HiOutlineCollection className="w-5 h-5 text-violet-400" />
             Projects ({projects.length})
           </h2>
 
@@ -88,12 +106,14 @@ export default function Profile() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted">No projects yet.</p>
+            <div className="card p-8 text-center">
+              <p className="text-sm text-slate-500">No projects yet.</p>
+            </div>
           )}
         </section>
       </div>
 
-      {/* edit drawer (only renders when isOwn) */}
+      {/* edit drawer */}
       <EditProfileDrawer
         key={`${profile.id}-${drawerOpen ? "open" : "closed"}`}
         open={drawerOpen}
