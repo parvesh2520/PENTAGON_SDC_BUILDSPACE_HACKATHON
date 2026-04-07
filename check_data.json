@@ -1,5 +1,0 @@
-{
-  "query": "SELECT * FROM public.bookmarks LIMIT 5;",
-  "parameters": [],
-  "read_only": true
-}
