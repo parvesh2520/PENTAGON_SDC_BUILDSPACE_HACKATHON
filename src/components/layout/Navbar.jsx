@@ -7,7 +7,7 @@
 */
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { HiOutlineMoon, HiOutlineSun, HiOutlineMenu, HiOutlineX } from "react-icons/hi";
 import useAuthStore from "../../store/authStore";
 import useThemeStore from "../../store/themeStore";
@@ -22,20 +22,25 @@ export default function Navbar() {
   const toggle   = useThemeStore((s) => s.toggle);
   const navigate = useNavigate();
 
-  const [menuOpen, setMenuOpen]       = useState(false);
-  const [dropdownOpen, setDropdown]   = useState(false);
+  const [menuOpen, setMenuOpen]     = useState(false);
+  const [dropdownOpen, setDropdown] = useState(false);
 
   function handleSignOut() {
     signOut();
     navigate("/");
   }
 
-  // links shown when the user is logged in
-  const authLinks = [
+  const primaryLinks = [
     { to: "/feed",          label: "Feed" },
     { to: "/projects",      label: "Projects" },
     { to: "/opportunities", label: "Opportunities" },
     { to: "/search",        label: "Search" },
+  ];
+
+  const guestLinks = [
+    { to: "/", label: "Home" },
+    { to: "/projects", label: "Projects" },
+    { to: "/opportunities", label: "Opportunities" },
   ];
 
   return (
@@ -48,15 +53,20 @@ export default function Navbar() {
 
         {/* --- desktop nav links --- */}
         <div className="hidden md:flex items-center gap-6">
-          {user &&
-            authLinks.map((l) => (
-              <Link
+          {(user ? primaryLinks : guestLinks).map((l) => (
+              <NavLink
                 key={l.to}
                 to={l.to}
-                className="text-sm text-body dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                className={({ isActive }) =>
+                  `text-sm transition-colors ${
+                    isActive
+                      ? "text-brand-600 dark:text-brand-400 font-semibold"
+                      : "text-body dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400"
+                  }`
+                }
               >
                 {l.label}
-              </Link>
+              </NavLink>
             ))}
         </div>
 
@@ -139,18 +149,40 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden border-t border-border dark:border-slate-700 bg-white dark:bg-slate-900 px-4 pb-4 animate-fade-up">
           {user ? (
-            authLinks.map((l) => (
-              <Link
+            primaryLinks.map((l) => (
+              <NavLink
                 key={l.to}
                 to={l.to}
-                className="block py-2 text-body dark:text-slate-300"
+                className={({ isActive }) =>
+                  `block rounded-lg px-2 py-2 text-sm ${
+                    isActive
+                      ? "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300"
+                      : "text-body dark:text-slate-300"
+                  }`
+                }
                 onClick={() => setMenuOpen(false)}
               >
                 {l.label}
-              </Link>
+              </NavLink>
             ))
           ) : (
             <div className="flex flex-col gap-2 pt-2">
+              {guestLinks.map((l) => (
+                <NavLink
+                  key={l.to}
+                  to={l.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `block rounded-lg px-2 py-2 text-sm ${
+                      isActive
+                        ? "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300"
+                        : "text-body dark:text-slate-300"
+                    }`
+                  }
+                >
+                  {l.label}
+                </NavLink>
+              ))}
               <Button variant="ghost" onClick={() => { navigate("/auth"); setMenuOpen(false); }}>
                 Log In
               </Button>

@@ -17,7 +17,14 @@ import PageWrapper from "../components/layout/PageWrapper";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import Avatar from "../components/ui/Avatar";
-import { HiOutlineUpload, HiOutlineMoon, HiOutlineSun } from "react-icons/hi";
+import {
+  HiOutlineUpload,
+  HiOutlineMoon,
+  HiOutlineSun,
+  HiOutlineRefresh,
+  HiOutlineCheckCircle,
+  HiOutlineExclamationCircle,
+} from "react-icons/hi";
 
 export default function Settings() {
   const user     = useAuthStore((s) => s.user);
@@ -32,6 +39,8 @@ export default function Settings() {
   const [uploading, setUploading]     = useState(false);
   const [saving, setSaving]           = useState(false);
   const [msg, setMsg]                 = useState(null);
+  const [checksLoading, setChecksLoading] = useState(false);
+  const [systemChecks, setSystemChecks] = useState([]);
 
   const displayName = profileDraft?.display_name ?? profile?.display_name ?? "";
   const bio = profileDraft?.bio ?? profile?.bio ?? "";
@@ -40,6 +49,16 @@ export default function Settings() {
   async function handleAvatarUpload(e) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setMsg("Image too large. Please upload a file smaller than 2MB.");
+      return;
+    }
+
+    if (!["image/png", "image/jpeg", "image/jpg", "image/webp"].includes(file.type)) {
+      setMsg("Unsupported format. Please use PNG, JPG, or WEBP.");
+      return;
+    }
 
     setUploading(true);
     const filePath = `${user.id}/${Date.now()}-${file.name}`;
@@ -58,6 +77,38 @@ export default function Settings() {
     }
 
     setUploading(false);
+  }
+
+  async function runSystemChecks() {
+    setChecksLoading(true);
+    const checks = [];
+
+    const tableNames = ["profiles", "projects", "project_members", "opportunities", "notifications", "feed_posts"];
+    for (const table of tableNames) {
+      const { error } = await supabase.from(table).select("id", { head: true, count: "exact" }).limit(1);
+      checks.push({
+        label: `Table: ${table}`,
+        ok: !error,
+        detail: error?.message || "OK",
+      });
+    }
+
+    const { error: bucketError } = await supabase.storage.from("avatars").list("", { limit: 1 });
+    checks.push({
+      label: "Storage bucket: avatars",
+      ok: !bucketError,
+      detail: bucketError?.message || "OK",
+    });
+
+    const { error: authError } = await supabase.auth.getSession();
+    checks.push({
+      label: "Auth session endpoint",
+      ok: !authError,
+      detail: authError?.message || "OK",
+    });
+
+    setSystemChecks(checks);
+    setChecksLoading(false);
   }
 
   // save profile changes
@@ -236,6 +287,47 @@ export default function Settings() {
         <Button variant="danger" onClick={deleteAccount}>
           Delete Account
         </Button>
+      </section>
+
+      {/* --- Supabase System Check --- */}
+      <section className="rounded-2xl border border-border dark:border-slate-700 bg-white dark:bg-slate-800 p-6 mt-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-heading dark:text-white">System Health Check</h2>
+            <p className="text-xs text-muted mt-1">Verify Supabase tables, storage bucket, and auth endpoint.</p>
+          </div>
+          <Button variant="secondary" onClick={runSystemChecks} disabled={checksLoading}>
+            <HiOutlineRefresh className="w-4 h-4" />
+            {checksLoading ? "Checking..." : "Run Check"}
+          </Button>
+        </div>
+
+        {systemChecks.length > 0 ? (
+          <ul className="space-y-2">
+            {systemChecks.map((check) => (
+              <li
+                key={check.label}
+                className={`rounded-lg border px-3 py-2 text-sm flex items-center justify-between gap-3 ${
+                  check.ok
+                    ? "border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20"
+                    : "border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20"
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  {check.ok ? (
+                    <HiOutlineCheckCircle className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-300" />
+                  ) : (
+                    <HiOutlineExclamationCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-300" />
+                  )}
+                  <span className="text-heading dark:text-white">{check.label}</span>
+                </div>
+                <span className="text-xs text-muted truncate max-w-[50%] text-right">{check.detail}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted">Run the check to validate backend connections.</p>
+        )}
       </section>
     </PageWrapper>
   );
