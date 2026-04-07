@@ -1,8 +1,7 @@
 /*
   Notifications.jsx
   -----------------
-  Full notification inbox page. Just wraps the NotificationList
-  component inside a page wrapper.
+  Futuristic notification inbox page.
 */
 
 import PageWrapper from "../components/layout/PageWrapper";

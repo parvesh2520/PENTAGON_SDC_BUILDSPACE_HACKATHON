@@ -1,17 +1,86 @@
 /*
   Auth.jsx
   --------
-  Premium login/signup page with glassmorphic card.
-  Features GitHub OAuth + email/password with gradient accents.
+  Premium cyberpunk login/signup page with terminal aesthetics.
+  Features GitHub OAuth + email/password with neon accents.
 */
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { HiOutlineLightningBolt } from "react-icons/hi";
+import { HiOutlineLightningBolt, HiOutlineCode, HiOutlineTerminal } from "react-icons/hi";
 import { FaGithub } from "react-icons/fa";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+
+/* Animated code background */
+function CodeBackground() {
+  const lines = [
+    "const developer = await auth.signIn();",
+    "if (developer.verified) {",
+    "  await team.join(developer);",
+    "  console.log('Welcome to BuildSpace');",
+    "}",
+    "",
+    "// Find your dream team",
+    "const teammates = await search({",
+    "  skills: ['react', 'node'],",
+    "  available: true",
+    "});",
+    "",
+    "await project.create({",
+    "  name: 'Next Big Thing',",
+    "  team: teammates",
+    "});",
+  ];
+
+  return (
+    <div className="absolute inset-0 overflow-hidden opacity-[0.03] pointer-events-none font-mono text-xs leading-relaxed">
+      <div className="absolute inset-0 flex flex-col justify-center items-center">
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            className="animate-fade-up text-cyan-400"
+            style={{ animationDelay: `${i * 200}ms` }}
+          >
+            {line}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Floating particles */
+function Particles() {
+  const particles = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 1,
+    duration: Math.random() * 15 + 10,
+    delay: Math.random() * 5,
+  }));
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute rounded-full bg-cyan-400/20"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            animation: `float ${p.duration}s ease-in-out infinite`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function Auth() {
   const navigate  = useNavigate();
@@ -37,47 +106,53 @@ export default function Auth() {
   }
 
   return (
-    <div className="relative min-h-[90vh] flex items-center justify-center px-4 py-12 mesh-gradient">
-      {/* background orbs */}
-      <div className="absolute top-20 left-[20%] w-60 h-60 rounded-full bg-violet-600/15 blur-[100px] animate-float" />
-      <div className="absolute bottom-20 right-[20%] w-48 h-48 rounded-full bg-cyan-500/10 blur-[80px] animate-float-slow" />
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-16 overflow-hidden">
+      {/* Background layers */}
+      <div className="absolute inset-0 mesh-gradient" />
+      <div className="absolute inset-0 cyber-grid opacity-30" />
+      <CodeBackground />
+      <Particles />
+
+      {/* Floating orbs */}
+      <div className="floating-orb floating-orb-cyan w-[400px] h-[400px] top-[-10%] left-[-10%] animate-float" />
+      <div className="floating-orb floating-orb-blue w-[300px] h-[300px] bottom-[-5%] right-[10%] animate-float-slow" />
 
       <div className="relative z-10 w-full max-w-md animate-fade-up">
-        {/* header */}
-        <div className="text-center mb-8">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600 to-violet-500 flex items-center justify-center shadow-lg shadow-violet-500/25 mb-4">
-            <HiOutlineLightningBolt className="w-7 h-7 text-white" />
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-xl shadow-cyan-500/30 mb-6 animate-glow-pulse">
+            <HiOutlineCode className="w-8 h-8 text-white" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-white">
+          <h1 className="font-display text-4xl font-bold text-white animate-fade-up delay-100">
             {isLogin ? "Welcome back" : "Join BuildSpace"}
           </h1>
-          <p className="text-slate-400 mt-2">
+          <p className="text-slate-400 mt-3 animate-fade-up delay-200">
             {isLogin
-              ? "Log in to pick up where you left off."
+              ? "Log in to continue building amazing projects."
               : "Create your account and start collaborating."}
           </p>
         </div>
 
-        {/* form card */}
-        <div className="card p-6 sm:p-8">
+        {/* Form card */}
+        <div className="card p-8 animate-fade-up delay-300">
           {/* GitHub OAuth */}
           <button
             onClick={signInWithGitHub}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 rounded-xl border border-violet-500/20 bg-slate-800/60 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-700/60 hover:border-violet-500/30 transition-all cursor-pointer"
+            className="w-full flex items-center justify-center gap-3 rounded-xl border border-cyan-500/20 bg-slate-800/60 px-4 py-4 text-sm font-semibold text-white hover:bg-slate-700/60 hover:border-cyan-500/40 hover:shadow-lg hover:shadow-cyan-500/10 transition-all cursor-pointer group"
           >
-            <FaGithub className="w-5 h-5" />
+            <FaGithub className="w-5 h-5 group-hover:scale-110 transition-transform" />
             Continue with GitHub
           </button>
 
-          {/* divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-violet-500/10" />
-            <span className="text-xs text-slate-500 uppercase tracking-wider font-medium">or</span>
-            <div className="flex-1 h-px bg-violet-500/10" />
+          {/* Divider */}
+          <div className="flex items-center gap-4 my-8">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+            <span className="text-xs text-slate-500 uppercase tracking-wider font-medium px-2">or</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <Input
                 label="Display Name"
@@ -100,30 +175,42 @@ export default function Auth() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter your password"
             />
 
             {error && (
-              <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+              <div className="flex items-start gap-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 animate-fade-up">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 flex-shrink-0" />
                 {error}
-              </p>
+              </div>
             )}
 
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Please wait…" : isLogin ? "Log In" : "Create Account"}
+              <HiOutlineLightningBolt className="w-4 h-4" />
+              {loading ? "Please wait..." : isLogin ? "Log In" : "Create Account"}
             </Button>
           </form>
 
-          {/* toggle */}
-          <p className="text-center text-sm text-slate-500 mt-6">
+          {/* Toggle */}
+          <p className="text-center text-sm text-slate-500 mt-8">
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               onClick={() => { setIsLogin(!isLogin); setError(null); }}
-              className="text-violet-400 font-semibold hover:text-violet-300 transition-colors cursor-pointer"
+              className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors cursor-pointer"
             >
               {isLogin ? "Sign up" : "Log in"}
             </button>
           </p>
+        </div>
+
+        {/* Terminal footer */}
+        <div className="mt-8 text-center animate-fade-up delay-500">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/40 border border-cyan-500/10 font-mono text-xs text-slate-500">
+            <HiOutlineTerminal className="w-4 h-4 text-cyan-400" />
+            <span className="text-cyan-400/60">&gt;</span>
+            <span>Ready to authenticate...</span>
+            <span className="w-2 h-4 bg-cyan-400/60 animate-blink" />
+          </div>
         </div>
       </div>
     </div>

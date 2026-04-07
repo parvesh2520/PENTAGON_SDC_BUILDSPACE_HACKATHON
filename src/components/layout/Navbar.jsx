@@ -1,14 +1,13 @@
 /*
   Navbar.jsx
   ----------
-  Floating frosted-glass navigation bar with violet accent glow.
-  Features: gradient logo, pill-shaped active links, smooth mobile
-  drawer, avatar dropdown with glass effect.
+  Premium floating navigation with glassmorphism and neon accents.
+  Features: animated logo, smooth mobile drawer, glowing hover states.
 */
 
 import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { HiOutlineMoon, HiOutlineSun, HiOutlineMenu, HiOutlineX } from "react-icons/hi";
+import { HiOutlineMoon, HiOutlineSun, HiOutlineMenu, HiOutlineX, HiOutlineCode } from "react-icons/hi";
 import useAuthStore from "../../store/authStore";
 import useThemeStore from "../../store/themeStore";
 import NotificationBell from "../notifications/NotificationBell";
@@ -27,14 +26,14 @@ export default function Navbar() {
   const [scrolled, setScrolled]     = useState(false);
   const dropdownRef = useRef(null);
 
-  /* track scroll to intensify glass effect */
+  /* Track scroll for glass effect intensity */
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* close dropdown on outside click */
+  /* Close dropdown on outside click */
   useEffect(() => {
     function handleClick(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -65,28 +64,36 @@ export default function Navbar() {
   ];
 
   const navLinkClass = ({ isActive }) =>
-    `relative px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+    `relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
       isActive
-        ? "text-white bg-violet-500/15 shadow-sm shadow-violet-500/10"
+        ? "text-cyan-300 bg-cyan-500/10 shadow-sm shadow-cyan-500/10"
         : "text-slate-400 hover:text-white hover:bg-white/5"
     }`;
 
   return (
     <nav
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+      className={`sticky top-0 z-50 w-full transition-all duration-500 ${
         scrolled
-          ? "bg-slate-900/80 backdrop-blur-2xl border-b border-violet-500/10 shadow-lg shadow-violet-500/5"
+          ? "bg-slate-900/80 backdrop-blur-2xl border-b border-cyan-500/10 shadow-lg shadow-cyan-500/5"
           : "bg-transparent border-b border-transparent"
       }`}
     >
+      {/* Animated top border */}
+      <div className={`absolute top-0 left-0 right-0 h-px transition-opacity duration-500 ${scrolled ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="h-full bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+      </div>
+
       <div className="app-shell flex h-16 items-center justify-between">
-        {/* --- logo --- */}
-        <Link to="/" className="flex items-center gap-1 font-display font-bold text-xl tracking-tight group">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 font-display font-bold text-xl tracking-tight group">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-shadow">
+            <HiOutlineCode className="w-5 h-5 text-white" />
+          </div>
           <span className="text-gradient">Build</span>
-          <span className="text-white group-hover:text-violet-200 transition-colors">Space</span>
+          <span className="text-white group-hover:text-cyan-200 transition-colors">Space</span>
         </Link>
 
-        {/* --- desktop nav links --- */}
+        {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-1">
           {(user ? primaryLinks : guestLinks).map((l) => (
             <NavLink key={l.to} to={l.to} className={navLinkClass}>
@@ -95,12 +102,12 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* --- right side controls --- */}
-        <div className="flex items-center gap-2">
-          {/* theme toggle */}
+        {/* Right side controls */}
+        <div className="flex items-center gap-3">
+          {/* Theme toggle */}
           <button
             onClick={toggle}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+            className="p-2.5 rounded-xl text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all cursor-pointer"
             aria-label="Toggle dark mode"
           >
             {theme === "dark" ? <HiOutlineSun className="w-5 h-5" /> : <HiOutlineMoon className="w-5 h-5" />}
@@ -108,14 +115,14 @@ export default function Navbar() {
 
           {user ? (
             <>
-              {/* notification bell */}
+              {/* Notification bell */}
               <NotificationBell />
 
-              {/* avatar dropdown */}
+              {/* Avatar dropdown */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdown(!dropdownOpen)}
-                  className="cursor-pointer rounded-full transition-all hover:ring-2 hover:ring-violet-500/30"
+                  className="cursor-pointer rounded-full transition-all hover:ring-2 hover:ring-cyan-500/40 hover:shadow-lg hover:shadow-cyan-500/20"
                 >
                   <Avatar
                     src={user.user_metadata?.avatar_url}
@@ -125,32 +132,42 @@ export default function Navbar() {
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-52 rounded-xl bg-slate-900/95 backdrop-blur-xl border border-violet-500/15 shadow-2xl shadow-black/40 py-1.5 animate-slide-down">
-                    <div className="px-4 py-2 border-b border-violet-500/10">
-                      <p className="text-sm font-medium text-white truncate">
+                  <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/15 shadow-2xl shadow-black/50 py-2 animate-slide-down">
+                    {/* User info header */}
+                    <div className="px-4 py-3 border-b border-cyan-500/10">
+                      <p className="text-sm font-semibold text-white truncate">
                         {user.user_metadata?.display_name || "Developer"}
                       </p>
                       <p className="text-xs text-slate-500 truncate">{user.email}</p>
                     </div>
-                    <Link
-                      to={`/u/${user.user_metadata?.username || user.id}`}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-violet-500/10 transition-colors"
-                      onClick={() => setDropdown(false)}
-                    >
-                      My Profile
-                    </Link>
-                    <Link
-                      to="/settings"
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-violet-500/10 transition-colors"
-                      onClick={() => setDropdown(false)}
-                    >
-                      Settings
-                    </Link>
-                    <hr className="my-1 border-violet-500/10" />
+
+                    {/* Menu items */}
+                    <div className="py-1">
+                      <Link
+                        to={`/u/${user.user_metadata?.username || user.id}`}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-cyan-300 hover:bg-cyan-500/10 transition-all"
+                        onClick={() => setDropdown(false)}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                        My Profile
+                      </Link>
+                      <Link
+                        to="/settings"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-cyan-300 hover:bg-cyan-500/10 transition-all"
+                        onClick={() => setDropdown(false)}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                        Settings
+                      </Link>
+                    </div>
+
+                    <hr className="my-1 border-cyan-500/10" />
+
                     <button
                       onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                      className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer"
                     >
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
                       Sign Out
                     </button>
                   </div>
@@ -158,7 +175,7 @@ export default function Navbar() {
               </div>
             </>
           ) : (
-            /* guest CTAs */
+            /* Guest CTAs */
             <div className="hidden sm:flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
                 Log In
@@ -169,9 +186,9 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* mobile hamburger */}
+          {/* Mobile hamburger */}
           <button
-            className="md:hidden p-2 text-slate-400 hover:text-white cursor-pointer rounded-xl hover:bg-white/5 transition-all"
+            className="md:hidden p-2.5 text-slate-400 hover:text-cyan-400 cursor-pointer rounded-xl hover:bg-cyan-500/10 transition-all"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <HiOutlineX className="w-6 h-6" /> : <HiOutlineMenu className="w-6 h-6" />}
@@ -179,33 +196,35 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* --- mobile drawer --- */}
+      {/* Mobile drawer */}
       {menuOpen && (
-        <div className="md:hidden border-t border-violet-500/10 bg-slate-900/95 backdrop-blur-2xl px-4 pb-4 pt-2 animate-slide-down">
-          <div className="flex flex-col gap-1">
-            {(user ? primaryLinks : guestLinks).map((l) => (
+        <div className="md:hidden border-t border-cyan-500/10 bg-slate-900/98 backdrop-blur-2xl px-4 pb-6 pt-4 animate-slide-down">
+          <div className="flex flex-col gap-2">
+            {(user ? primaryLinks : guestLinks).map((l, i) => (
               <NavLink
                 key={l.to}
                 to={l.to}
                 className={({ isActive }) =>
-                  `block rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                  `block rounded-xl px-4 py-3 text-sm font-medium transition-all animate-fade-up ${
                     isActive
-                      ? "bg-violet-500/15 text-white"
-                      : "text-slate-400 hover:text-white hover:bg-white/5"
+                      ? "bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
+                      : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
                   }`
                 }
+                style={{ animationDelay: `${i * 50}ms` }}
                 onClick={() => setMenuOpen(false)}
               >
                 {l.label}
               </NavLink>
             ))}
           </div>
+
           {!user && (
-            <div className="flex flex-col gap-2 pt-3 border-t border-violet-500/10 mt-3">
-              <Button variant="ghost" onClick={() => { navigate("/auth"); setMenuOpen(false); }}>
+            <div className="flex flex-col gap-3 pt-4 border-t border-cyan-500/10 mt-4">
+              <Button variant="ghost" className="w-full" onClick={() => { navigate("/auth"); setMenuOpen(false); }}>
                 Log In
               </Button>
-              <Button onClick={() => { navigate("/auth"); setMenuOpen(false); }}>
+              <Button className="w-full" onClick={() => { navigate("/auth"); setMenuOpen(false); }}>
                 Sign Up
               </Button>
             </div>
