@@ -24,7 +24,7 @@ function LeftSidebar({ activeTab, setActiveTab }) {
   const tabs = [
     { id: 'projects', label: 'Explore', icon: <Compass className="w-4 h-4" /> },
     { id: 'bookmarks', label: 'Bookmarks', icon: <Bookmark className="w-4 h-4" /> },
-    { id: 'profile', label: 'My Projects', icon: <User className="w-4 h-4" /> },
+    { id: 'my-projects', label: 'My Projects', icon: <User className="w-4 h-4" /> },
   ]
 
   return (
@@ -37,15 +37,22 @@ function LeftSidebar({ activeTab, setActiveTab }) {
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}
           className={`
-            flex items-center gap-3 px-4 py-3 rounded-none font-mono text-sm transition-all duration-200 cursor-pointer
+            flex items-center justify-between px-4 py-3 rounded-none font-mono text-sm transition-all duration-200 cursor-pointer
             ${activeTab === tab.id
               ? "bg-[#e8ff47]/10 text-[#e8ff47] border-l-2 border-[#e8ff47]"
               : "text-[#666] hover:text-white hover:bg-white/5 border-l-2 border-transparent"
             }
           `}
         >
-          {tab.icon}
-          {tab.label}
+          <div className="flex items-center gap-3">
+            {tab.icon}
+            {tab.label}
+          </div>
+          {tab.count > 0 && (
+            <span className="text-xs bg-[#1f1f1f] px-2 py-0.5 rounded-full">
+              {tab.count}
+            </span>
+          )}
         </button>
       ))}
       <div className="mt-auto px-4 py-4">
@@ -291,7 +298,7 @@ function FeedCenterView({ projects, myProjectsList, searchQuery, setSearchQuery,
 
   // Get projects based on active tab
   const getDisplayProjects = () => {
-    if (activeTab === 'profile') {
+    if (activeTab === 'my-projects') {
       return myProjectsList || []
     }
     if (activeTab === 'bookmarks') {
@@ -303,7 +310,7 @@ function FeedCenterView({ projects, myProjectsList, searchQuery, setSearchQuery,
   const displayProjects = getDisplayProjects()
 
   const getTitle = () => {
-    if (activeTab === 'profile') return { main: 'My', highlight: 'Projects' }
+    if (activeTab === 'my-projects') return { main: 'My', highlight: 'Projects' }
     if (activeTab === 'bookmarks') return { main: 'Saved', highlight: 'Bookmarks' }
     return { main: 'Explore', highlight: 'Projects' }
   }
@@ -402,7 +409,7 @@ function FeedCenterView({ projects, myProjectsList, searchQuery, setSearchQuery,
           <div className="col-span-full py-20 text-center border border-[#1f1f1f] bg-[#0a0a0a] rounded-none">
             <p className="text-[#666] font-mono">
               {activeTab === 'bookmarks' ? 'No bookmarked projects yet.' :
-                activeTab === 'profile' ? 'You haven\'t created any projects yet.' :
+                activeTab === 'my-projects' ? 'You haven\'t created any projects yet.' :
                   'No projects found matching criteria.'}
             </p>
           </div>
@@ -422,21 +429,7 @@ function ProjectDetailCenterView({ project, onBack, user, incomingRequests, upda
 
   const handleAccept = async (req) => {
     await updateRequest(req.id, "accepted")
-    // Add to project_members
-    await supabase.from("project_members").insert({
-      project_id: req.project_id,
-      user_id: req.requester_id,
-      role: "member",
-    })
-    // Notify the requester
-    const projTitle = req.projects?.title || "the project"
-    await supabase.from("notifications").insert({
-      user_id: req.requester_id,
-      type: "join_request",
-      message: `Your request to join "${projTitle}" was accepted!`,
-      ref_id: req.project_id,
-      read: false,
-    })
+    // Note: project_members insert is now handled inside updateRequest hook
     refetchRequests?.()
   }
 
@@ -710,7 +703,10 @@ export default function Dashboard() {
 
       {/* 1. Left Sidebar Navigation */}
       <div className="hidden md:block w-64 shrink-0 border-r border-[#1f1f1f] bg-[#070707] z-20 shadow-xl shadow-black relative">
-        <LeftSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <LeftSidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
       </div>
 
       {/* 2. Center Dynamic Content Wrapper */}

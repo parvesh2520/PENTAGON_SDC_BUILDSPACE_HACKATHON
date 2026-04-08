@@ -222,79 +222,84 @@ export default function NotificationList() {
           animate="visible"
           className="border-t border-[#1f1f1f]"
         >
-          {filtered.map((n) => {
-            const rowRef = useRef(null);
-            const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-            const handleMouseMove = (e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-            };
-
-            return (
-              <motion.div
-                key={n.id}
-                ref={rowRef}
-                variants={rowVariants}
-                onMouseMove={handleMouseMove}
-                className={`group relative overflow-hidden flex items-start gap-4 p-6 transition-colors border-b border-[#1f1f1f] ${!n.read ? "bg-[#0a0a0a]/60" : "bg-transparent"
-                  } hover:bg-[#0a0a0a]`}
-              >
-                {/* Magnetic Spotlight */}
-                <div
-                  className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                  style={{
-                    background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, rgba(232,255,71,0.06), transparent 40%)`,
-                  }}
-                />
-                <div className="relative z-10 flex items-start gap-4 w-full">
-                  {/* Unread dot (only rounded element) */}
-                  {!n.read && (
-                    <div className="w-2 h-2 bg-[#e8ff47] rounded-full absolute left-2 top-8 shadow-[0_0_8px_#e8ff47]" />
-                  )}
-
-                  {/* Avatar/Icon */}
-                  <div className={`w-10 h-10 bg-[#1f1f1f] flex items-center justify-center flex-shrink-0 ${!n.read ? "text-[#e8ff47]" : "text-[#888888]"
-                    }`}>
-                    {getIcon(n)}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    {renderContent(n)}
-                    <p className="text-xs text-[#555555] font-mono mt-1.5">{timeAgo(n.created_at)}</p>
-                  </div>
-
-                  {/* Inline Actions */}
-                  {n.type === "join_request" && !n.read && (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => markRead(n.id)}
-                        className="bg-[#1f1f1f] text-white hover:bg-white hover:text-black px-4 py-2 text-sm font-medium transition-colors rounded-none cursor-pointer"
-                      >
-                        Review
-                      </button>
-                      <button
-                        onClick={() => markRead(n.id)}
-                        className="text-[#888888] hover:text-white px-4 py-2 text-sm transition-colors rounded-none cursor-pointer"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Read marker for read notifications */}
-                  {n.read && (
-                    <span className="text-[10px] font-mono text-[#444444] shrink-0 uppercase tracking-wider">
-                      Read
-                    </span>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+          {filtered.map((n) => (
+            <NotificationItem 
+              key={n.id} 
+              n={n} 
+              onMarkRead={markRead} 
+              renderContent={renderContent} 
+              getIcon={getIcon} 
+            />
+          ))}
         </motion.div>
       )}
     </div>
+  );
+}
+
+function NotificationItem({ n, onMarkRead, renderContent, getIcon }) {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  return (
+    <motion.div
+      variants={rowVariants}
+      onMouseMove={handleMouseMove}
+      className={`group relative overflow-hidden flex items-start gap-4 p-6 transition-colors border-b border-[#1f1f1f] ${!n.read ? "bg-[#0a0a0a]/60" : "bg-transparent"} hover:bg-[#0a0a0a]`}
+    >
+      {/* Magnetic Spotlight */}
+      <div
+        className="absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, rgba(232,255,71,0.06), transparent 40%)`,
+        }}
+      />
+      <div className="relative z-10 flex items-start gap-4 w-full">
+        {/* Unread dot */}
+        {!n.read && (
+          <div className="w-2 h-2 bg-[#e8ff47] rounded-full absolute left-2 top-8 shadow-[0_0_8px_#e8ff47]" />
+        )}
+
+        {/* Avatar/Icon */}
+        <div className={`w-10 h-10 bg-[#1f1f1f] flex items-center justify-center flex-shrink-0 ${!n.read ? "text-[#e8ff47]" : "text-[#888888]"}`}>
+          {getIcon(n)}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          {renderContent(n)}
+          <p className="text-xs text-[#555555] font-mono mt-1.5">{timeAgo(n.created_at)}</p>
+        </div>
+
+        {/* Inline Actions */}
+        {n.type === "join_request" && !n.read && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => onMarkRead(n.id)}
+              className="bg-[#1f1f1f] text-white hover:bg-white hover:text-black px-4 py-2 text-sm font-medium transition-colors rounded-none cursor-pointer"
+            >
+              Review
+            </button>
+            <button
+              onClick={() => onMarkRead(n.id)}
+              className="text-[#888888] hover:text-white px-4 py-2 text-sm transition-colors rounded-none cursor-pointer"
+            >
+              Decline
+            </button>
+          </div>
+        )}
+
+        {/* Read marker for read notifications */}
+        {n.read && (
+          <span className="text-[10px] font-mono text-[#444444] shrink-0 uppercase tracking-wider">
+            Read
+          </span>
+        )}
+      </div>
+    </motion.div>
   );
 }

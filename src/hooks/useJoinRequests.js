@@ -154,6 +154,15 @@ export function useJoinRequests() {
     async (requestId, newStatus) => {
       if (!user || !SUPABASE_CONFIG_VALID) return;
 
+      // Get the request details before updating
+      const request = incomingRequests.find((r) => r.id === requestId);
+      if (!request) {
+        console.error("Request not found:", requestId);
+        return;
+      }
+
+      console.log(`Updating request ${requestId} to status: ${newStatus}`);
+
       // Optimistic update
       setIncomingRequests((prev) =>
         prev.map((r) => (r.id === requestId ? { ...r, status: newStatus } : r))
@@ -165,11 +174,69 @@ export function useJoinRequests() {
         .eq("id", requestId);
 
       if (error) {
+        console.error("Error updating join request:", error);
         // Revert on error
         fetchIncoming();
+        return;
+      }
+
+      console.log(`Join request ${requestId} updated successfully`);
+
+      // If accepted, add user to project_members table
+      if (newStatus === "accepted") {
+        try {
+          console.log(`Adding user ${request.requester_id} to project ${request.project_id}`);
+
+          const { error: memberError } = await supabase
+            .from("project_members")
+            .insert({
+              project_id: request.project_id,
+              user_id: request.requester_id,
+              role: "member",
+            });
+
+          if (memberError) {
+            console.error("Error adding member to project_members:", memberError);
+            throw memberError;
+          }
+
+          console.log("Successfully added to project_members");
+
+          // Create notification for requester
+          const { error: notifError } = await supabase
+            .from("notifications")
+            .insert({
+              user_id: request.requester_id,
+              type: "join_accepted",
+              message: `Your request to join "${request.projects?.title || "the project"}" was accepted!`,
+              ref_id: request.project_id,
+              read: false,
+            });
+
+          if (notifError) {
+            console.error("Error creating notification:", notifError);
+          } else {
+            console.log("Notification created successfully");
+          }
+        } catch (err) {
+          console.error("Error in accept flow:", err);
+        }
+      } else if (newStatus === "declined") {
+        // Notify requester that their request was declined
+        try {
+          await supabase.from("notifications").insert({
+            user_id: request.requester_id,
+            type: "join_declined",
+            message: `Your request to join "${request.projects?.title || "the project"}" was declined.`,
+            ref_id: request.project_id,
+            read: false,
+          });
+        } catch (err) {
+          console.error("Error creating decline notification:", err);
+        }
       }
     },
-    [user, fetchIncoming]
+    [user, fetchIncoming, incomingRequests]
   );
 
   return {

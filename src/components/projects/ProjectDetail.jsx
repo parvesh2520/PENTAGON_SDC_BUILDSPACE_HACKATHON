@@ -76,35 +76,14 @@ export default function ProjectDetailView({ projectId }) {
 
   async function handleAccept(req) {
     await updateRequest(req.id, "accepted");
-    await supabase.from("project_members").insert({
-      project_id: req.project_id,
-      user_id: req.requester_id,
-      role: "member",
-    });
-    // Notify the requester that their request was accepted
-    const reqProjectTitle = req.projects?.title || "the project";
-    await supabase.from("notifications").insert({
-      user_id: req.requester_id,
-      type: "join_request",
-      message: `Your request to join "${reqProjectTitle}" was accepted!`,
-      ref_id: req.project_id,
-      read: false,
-    });
+    // Note: project_members insert & notification handled inside updateRequest hook
     refetchRequests();
     load();
   }
 
   async function handleDecline(req) {
     await updateRequest(req.id, "declined");
-    // Optionally notify the requester of the decline
-    const reqProjectTitle = req.projects?.title || "the project";
-    await supabase.from("notifications").insert({
-      user_id: req.requester_id,
-      type: "join_request",
-      message: `Your request to join "${reqProjectTitle}" was declined.`,
-      ref_id: req.project_id,
-      read: false,
-    });
+    // Note: decline notification handled inside updateRequest hook
     refetchRequests();
   }
 

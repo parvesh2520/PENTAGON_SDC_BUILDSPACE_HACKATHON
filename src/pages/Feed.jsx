@@ -36,10 +36,13 @@ export default function Feed() {
 
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
-  /* Prepend new realtime posts */
+  /* Prepend new realtime posts (de-duplicated) */
   useEffect(() => {
     if (incoming.length > 0) {
-      setPosts((prev) => [...incoming, ...prev]);
+      setPosts((prev) => {
+        const newOnes = incoming.filter((inc) => !prev.some((p) => p.id === inc.id));
+        return [...newOnes, ...prev];
+      });
     }
   }, [incoming]);
 

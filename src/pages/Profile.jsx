@@ -38,12 +38,14 @@ const formatStat = (num) => {
 
 export default function Profile() {
   const currentUser = useAuthStore((s) => s.user)
-  const { profile, loading, updateProfile } = useProfile()
+  const authLoading = useAuthStore((s) => s.loading)
+  const { profile, loading: profileLoading, updateProfile } = useProfile()
   const { fetchUserProjects } = useProjects()
   
   const [projects, setProjects] = useState([])
   const [loadingProjects, setLoadingProjects] = useState(true)
   const [editOpen, setEditOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState("profile")
 
   useEffect(() => {
     async function loadProjects() {
@@ -52,13 +54,23 @@ export default function Profile() {
         const userProjects = await fetchUserProjects(profile.id)
         setProjects(userProjects)
         setLoadingProjects(false)
+      } else if (!profileLoading) {
+        // If profile finished loading and there's no ID, stop loading projects
+        setLoadingProjects(false)
       }
     }
     loadProjects()
-  }, [profile?.id, fetchUserProjects])
+  }, [profile?.id, profileLoading, fetchUserProjects])
 
-  if (loading || (profile?.id && loadingProjects)) return <ProfileSkeleton />
-  if (!currentUser) return null
+  // SHOW SKELETON:
+  // 1. If global auth is still resolving
+  // 2. If profile table query is still active
+  // 3. If we have a profile but its projects are still in flight
+  if (authLoading || profileLoading || (profile?.id && loadingProjects)) {
+    return <ProfileSkeleton />
+  }
+
+  if (!currentUser && !profile) return null
 
   const p = profile || {}
   const isOwnProfile = profile?.id === currentUser.id
@@ -98,12 +110,17 @@ export default function Profile() {
     return await updateProfile(updates)
   }
 
+  const handleEditClick = (section) => {
+    setActiveSection(section)
+    setEditOpen(true)
+  }
+
   return (
     <>
       <ProfileView 
         userData={userData} 
         isOwn={isOwnProfile} 
-        onEdit={() => setEditOpen(true)} 
+        onEdit={handleEditClick} 
       />
       
       <EditProfileDrawer 
@@ -111,6 +128,7 @@ export default function Profile() {
         onClose={() => setEditOpen(false)} 
         profile={p}
         onSave={handleSaveProfile}
+        targetSection={activeSection}
       />
     </>
   )
